@@ -4,6 +4,9 @@
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
+    <string name="action_voice_rec">action voice rec</string>
+    <string name="action_location">action location</string>>
+
     <string name="action_settings">Settings</string>
     <string name="location_permission_denied">Open Mobile Map Package could not open because WRITE permission was denied.</string>
 </resources>
