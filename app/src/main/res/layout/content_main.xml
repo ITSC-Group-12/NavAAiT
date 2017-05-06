@@ -1,37 +1,93 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.sothree.slidinguppanel.SlidingUpPanelLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:sothree="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/sliding_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    android:gravity="bottom"
+    sothree:umanoDragView="@+id/dragView"
+    sothree:umanoOverlay="true"
+    sothree:umanoPanelHeight="68dp"
+    sothree:umanoParallaxOffset="100dp"
+    sothree:umanoScrollableView="@+id/list"
+    sothree:umanoShadowHeight="4dp"
     tools:context="com.team12.navaait.MainActivity"
     tools:showIn="@layout/app_bar_main">
 
-    <!-- MapView -->
-    <com.esri.arcgisruntime.mapping.view.MapView
-        android:id="@+id/mapView"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+    <android.support.constraint.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <com.arlib.floatingsearchview.FloatingSearchView
-            android:id="@+id/floating_search_view"
+        <!-- MapView -->
+        <com.esri.arcgisruntime.mapping.view.MapView
+            android:id="@+id/mapView"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <com.arlib.floatingsearchview.FloatingSearchView
+                android:id="@+id/floating_search_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:floatingSearch_close_search_on_keyboard_dismiss="true"
+                app:floatingSearch_leftActionMode="showHamburger"
+                app:floatingSearch_menu="@menu/menu_main"
+                app:floatingSearch_searchBarMarginLeft="@dimen/search_view_inset"
+                app:floatingSearch_searchBarMarginRight="@dimen/search_view_inset"
+                app:floatingSearch_searchBarMarginTop="@dimen/search_view_inset"
+                app:floatingSearch_searchHint="Search..."
+                app:floatingSearch_showSearchKey="false"
+                app:floatingSearch_suggestionsListAnimDuration="250" />
+
+        </com.esri.arcgisruntime.mapping.view.MapView>
+
+    </android.support.constraint.ConstraintLayout>
+    <!-- SLIDING LAYOUT -->
+    <LinearLayout
+        android:id="@+id/dragView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#ffffff"
+        android:clickable="true"
+        android:focusable="false"
+        android:orientation="vertical">
+
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            app:floatingSearch_close_search_on_keyboard_dismiss="true"
-            app:floatingSearch_leftActionMode="showHamburger"
-            app:floatingSearch_searchBarMarginLeft="@dimen/search_view_inset"
-            app:floatingSearch_searchBarMarginRight="@dimen/search_view_inset"
-            app:floatingSearch_searchBarMarginTop="@dimen/search_view_inset"
-            app:floatingSearch_searchHint="Search..."
-            app:floatingSearch_showSearchKey="false"
-            app:floatingSearch_menu="@menu/menu_main"
-            app:floatingSearch_suggestionsListAnimDuration="250" />
+            android:layout_height="68dp"
+            android:orientation="horizontal">
 
-    </com.esri.arcgisruntime.mapping.view.MapView>
+            <TextView
+                android:id="@+id/name"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center_vertical"
+                android:paddingLeft="10dp"
+                android:textSize="14sp" />
 
-</android.support.constraint.ConstraintLayout>
+            <Button
+                android:id="@+id/follow"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical|right"
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp"
+                android:textSize="14sp" />
+
+        </LinearLayout>
+
+        <ListView
+            android:id="@+id/list"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"></ListView>
+    </LinearLayout>
+</com.sothree.slidinguppanel.SlidingUpPanelLayout>
+

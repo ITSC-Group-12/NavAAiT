@@ -14,10 +14,15 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
+import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -31,8 +36,13 @@ import com.esri.arcgisruntime.mapping.view.Callout;
 import com.esri.arcgisruntime.mapping.view.DefaultMapViewOnTouchListener;
 import com.esri.arcgisruntime.mapping.view.LocationDisplay;
 import com.esri.arcgisruntime.mapping.view.MapView;
+import com.sothree.slidinguppanel.SlidingUpPanelLayout;
+import com.sothree.slidinguppanel.SlidingUpPanelLayout.PanelSlideListener;
+import com.sothree.slidinguppanel.SlidingUpPanelLayout.PanelState;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -47,6 +57,8 @@ public class MainActivity extends AppCompatActivity
     private MapView mMapView;
     private MobileMapPackage mapPackage;
     private FloatingSearchView mSearchView;
+
+    private SlidingUpPanelLayout mLayout;
 
     private static final String sTag = "Gesture";
     private Callout mCallout;
@@ -72,8 +84,16 @@ public class MainActivity extends AppCompatActivity
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+//                        .setAction("Action", null).show();
+
+                if (mLayout != null) {
+                    if (mLayout.getPanelState() != PanelState.HIDDEN) {
+                        mLayout.setPanelState(PanelState.HIDDEN);
+                    } else {
+                        mLayout.setPanelState(PanelState.COLLAPSED);
+                    }
+                }
             }
         });
         mSearchView = (FloatingSearchView) findViewById(R.id.floating_search_view);
@@ -181,6 +201,68 @@ public class MainActivity extends AppCompatActivity
             mLocationDisplay.startAsync();
         }
 
+        ListView lv = (ListView) findViewById(R.id.list);
+        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Toast.makeText(MainActivity.this, "onItemClick", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        List<String> your_array_list = Arrays.asList(
+                "This",
+                "Is",
+                "An",
+                "Example",
+                "ListView"
+        );
+
+        // This is the array adapter, it takes the context of the activity as a
+        // first parameter, the type of list view as a second parameter and your
+        // array as a third parameter.
+        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(
+                this,
+                android.R.layout.simple_list_item_1,
+                your_array_list);
+
+        lv.setAdapter(arrayAdapter);
+
+        mLayout = (SlidingUpPanelLayout) findViewById(R.id.sliding_layout);
+        mLayout.addPanelSlideListener(new PanelSlideListener() {
+            @Override
+            public void onPanelSlide(View panel, float slideOffset) {
+                Log.i(TAG, "onPanelSlide, offset " + slideOffset);
+            }
+
+            @Override
+            public void onPanelStateChanged(View panel, PanelState previousState, PanelState newState) {
+
+            }
+
+        });
+        mLayout.setFadeOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
+            }
+        });
+
+        TextView t = (TextView) findViewById(R.id.name);
+        t.setText("Hello");
+        Button f = (Button) findViewById(R.id.follow);
+        f.setText("Action");
+        f.setMovementMethod(LinkMovementMethod.getInstance());
+        f.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+            }
+        });
+
+        mLayout.setAnchorPoint(0.7f);
+        mLayout.setPanelState(PanelState.ANCHORED);
+        mLayout.setPanelState(PanelState.HIDDEN);
+
     }
 
     /**
@@ -257,9 +339,19 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
+
+            if (mLayout != null &&
+                    (mLayout.getPanelState() == PanelState.EXPANDED || mLayout.getPanelState() == PanelState.ANCHORED)) {
+                mLayout.setPanelState(PanelState.COLLAPSED);
+            } else {
+                super.onBackPressed();
+            }
+
         } else {
             super.onBackPressed();
         }
+
+
     }
 
     @SuppressWarnings("StatementWithEmptyBody")
