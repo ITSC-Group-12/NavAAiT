@@ -55,7 +55,7 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
-
+    public static final String LoginSpTAG = "Logged in";
     private static final String TAG = "MMPK";
     private static final String FILE_EXTENSION = ".mmpk";
     private static File extStorDir;
