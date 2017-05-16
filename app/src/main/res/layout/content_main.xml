@@ -47,6 +47,8 @@
 
         </com.esri.arcgisruntime.mapping.view.MapView>
 
+
+
     </android.support.constraint.ConstraintLayout>
     <!-- SLIDING LAYOUT -->
     <LinearLayout
@@ -89,5 +91,7 @@
             android:layout_height="0dp"
             android:layout_weight="1"></ListView>
     </LinearLayout>
+
+
 </com.sothree.slidinguppanel.SlidingUpPanelLayout>
 

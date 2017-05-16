@@ -23,4 +23,47 @@
         android:layout_margin="@dimen/fab_margin"
         app:srcCompat="@android:drawable/ic_dialog_email" />
 
+
+    <com.wunderlist.slidinglayer.SlidingLayer
+        android:id="@+id/slidingLayer1"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:elevation="0dip">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/primary_light">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+            <ToggleButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                />
+
+            <TextView
+                android:id="@+id/swipeText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:gravity="center"
+                android:drawablePadding="15dip"
+                android:paddingBottom="80dp"
+                android:textSize="17sp"
+                android:textColor="@color/primary_text"/>
+
+            <!--<Button-->
+                <!--android:id="@+id/buttonClose"-->
+                <!--style="@style/ButtonRed"-->
+                <!--android:onClick="buttonClicked"-->
+                <!--android:layout_marginBottom="60dp"-->
+                <!--android:layout_alignParentBottom="true"-->
+                <!--android:layout_centerHorizontal="true"-->
+                <!--android:text="@string/close_button_container"/>-->
+
+        </LinearLayout>
+
+    </com.wunderlist.slidinglayer.SlidingLayer>
 </android.support.design.widget.CoordinatorLayout>

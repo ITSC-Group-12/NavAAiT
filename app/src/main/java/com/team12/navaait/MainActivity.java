@@ -3,12 +3,14 @@ package com.team12.navaait;
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.annotation.NonNull;
+import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
-import android.support.design.widget.Snackbar;
+//import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
@@ -16,9 +18,11 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
+import android.view.DragEvent;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.animation.Animation;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -31,6 +35,7 @@ import com.esri.arcgisruntime.geometry.GeometryEngine;
 import com.esri.arcgisruntime.geometry.Point;
 import com.esri.arcgisruntime.geometry.SpatialReferences;
 import com.esri.arcgisruntime.loadable.LoadStatus;
+import com.esri.arcgisruntime.mapping.Bookmark;
 import com.esri.arcgisruntime.mapping.MobileMapPackage;
 import com.esri.arcgisruntime.mapping.view.Callout;
 import com.esri.arcgisruntime.mapping.view.DefaultMapViewOnTouchListener;
@@ -39,6 +44,9 @@ import com.esri.arcgisruntime.mapping.view.MapView;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout.PanelSlideListener;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout.PanelState;
+import com.wunderlist.slidinglayer.LayerTransformer;
+import com.wunderlist.slidinglayer.SlidingLayer;
+import com.wunderlist.slidinglayer.transformer.SlideJoyTransformer;
 
 import java.io.File;
 import java.util.Arrays;
@@ -60,6 +68,11 @@ public class MainActivity extends AppCompatActivity
 
     private SlidingUpPanelLayout mLayout;
 
+    private SlidingLayer mSlidingLayer;
+    private TextView swipeText;
+
+    private FloatingActionButton fab;
+
     private static final String sTag = "Gesture";
     private Callout mCallout;
 
@@ -80,7 +93,8 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+
+        fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -102,6 +116,66 @@ public class MainActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+        mSlidingLayer = (SlidingLayer) findViewById(R.id.slidingLayer1);
+        swipeText = (TextView) findViewById(R.id.swipeText);
+
+        int textResource;
+
+        textResource = R.string.swipe_down_label;
+
+        mSlidingLayer.setStickTo(SlidingLayer.STICK_TO_BOTTOM);
+        swipeText.setText(getResources().getString(textResource));
+
+        LayerTransformer transformer;
+        transformer = new SlideJoyTransformer();
+        mSlidingLayer.setLayerTransformer(transformer);
+
+        mSlidingLayer.setShadowSizeRes(R.dimen.shadow_size);
+        mSlidingLayer.setShadowDrawable(R.drawable.sidebar_shadow);
+
+        int offsetDistance = 0;
+        mSlidingLayer.setOffsetDistance(offsetDistance);
+
+        int previewOffset = -1;
+        mSlidingLayer.setPreviewOffsetDistance(previewOffset);
+
+        mSlidingLayer.closeLayer(true);
+
+
+        mSlidingLayer.setOnInteractListener(new SlidingLayer.OnInteractListener() {
+            @Override
+            public void onOpen() {
+
+            }
+
+            @Override
+            public void onShowPreview() {
+
+            }
+
+            @Override
+            public void onClose() {
+                if (!fab.isShown()) {
+                    fab.show();
+                }
+            }
+
+            @Override
+            public void onOpened() {
+
+            }
+
+            @Override
+            public void onPreviewShowed() {
+
+            }
+
+            @Override
+            public void onClosed() {
+
+            }
+        });
 
         // get sdcard resource name
         extStorDir = Environment.getExternalStorageDirectory();
@@ -324,6 +398,7 @@ public class MainActivity extends AppCompatActivity
                 if (mapPackage.getLoadStatus() == LoadStatus.LOADED && mapPackage.getMaps().size() > 0) {
                     // add the map from the mobile map package to the MapView
                     mMapView.setMap(mapPackage.getMaps().get(0));
+//                    mapPackage.getMaps().get(0).getItem().
 
                 } else {
                     // Log an issue if the mobile map package fails to load
@@ -331,7 +406,6 @@ public class MainActivity extends AppCompatActivity
                 }
             }
         });
-        //[DocRef: END]
     }
 
     @Override
@@ -340,15 +414,16 @@ public class MainActivity extends AppCompatActivity
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
 
+
+
+        } else {
+
             if (mLayout != null &&
                     (mLayout.getPanelState() == PanelState.EXPANDED || mLayout.getPanelState() == PanelState.ANCHORED)) {
                 mLayout.setPanelState(PanelState.COLLAPSED);
             } else {
                 super.onBackPressed();
             }
-
-        } else {
-            super.onBackPressed();
         }
 
 
@@ -360,18 +435,14 @@ public class MainActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_camera) {
+        if (id == R.id.nav_share) {
             // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
+        } else if (id == R.id.nav_settings) {
 
-        } else if (id == R.id.nav_slideshow) {
-
-        } else if (id == R.id.nav_manage) {
-
-        } else if (id == R.id.nav_share) {
-
-        } else if (id == R.id.nav_send) {
-
+            mSlidingLayer.openLayer(true);
+            if (fab.isShown()) {
+                fab.hide();
+            }
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
