@@ -55,6 +55,7 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
+    public static final long FIND_SUGGESTION_SIMULATED_DELAY = 250;
     public static final String LoginSpTAG = "Logged in";
     private static final String TAG = "MMPK";
     private static final String FILE_EXTENSION = ".mmpk";
@@ -142,6 +143,42 @@ public class MainActivity extends AppCompatActivity
 
         mSlidingLayer.closeLayer(true);
 
+        mSearchView.setOnQueryChangeListener(new FloatingSearchView.OnQueryChangeListener() {
+            @Override
+            public void onSearchTextChanged(String oldQuery, String newQuery) {
+                if (!oldQuery.equals("") && newQuery.equals("")) {
+                    mSearchView.clearSuggestions();
+                } else {
+
+                    //this shows the top left circular progress
+                    //you can call it where ever you want, but
+                    //it makes sense to do it when loading something in
+                    //the background.
+                    mSearchView.showProgress();
+
+                    //simulates a query call to a data source
+                    //with a new query.
+                    DataHelper.findSuggestions(MainActivity.this, newQuery, 5,
+                            FIND_SUGGESTION_SIMULATED_DELAY, new DataHelper.OnFindSuggestionsListener() {
+
+                                @Override
+                                public void onResults(List<NameSuggestion> results) {
+
+                                    //this will swap the data and
+                                    //render the collapse/expand animations as necessary
+                                    mSearchView.swapSuggestions(results);
+
+                                    //let the users know that the background
+                                    //process has completed
+                                    mSearchView.hideProgress();
+                                }
+                            });
+                }
+
+                Log.d(TAG, "onSearchTextChanged()");
+            }
+        });
+
 
         mSlidingLayer.setOnInteractListener(new SlidingLayer.OnInteractListener() {
             @Override
@@ -202,6 +239,7 @@ public class MainActivity extends AppCompatActivity
 
 
         mMapView.setOnTouchListener(new DefaultMapViewOnTouchListener(this, mMapView) {
+
 
             @Override
             public boolean onSingleTapConfirmed(MotionEvent motionEvent) {
