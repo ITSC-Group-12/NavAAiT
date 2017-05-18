@@ -60,6 +60,9 @@ import com.wunderlist.slidinglayer.transformer.SlideJoyTransformer;
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+
+//import android.support.design.widget.Snackbar;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -84,14 +87,34 @@ public class MainActivity extends AppCompatActivity
 
     private static final String sTag = "Gesture";
     private Callout mCallout;
+    private Graphic mRouteGraphic;
 
     private LocationDisplay mLocationDisplay;
+    private GraphicsOverlay graphicsOverlay = new GraphicsOverlay();
+
+    private RecyclerView mRecyclerView;
+    private RecyclerView.Adapter mAdapter;
+    private RecyclerView.LayoutManager mLayoutManager;
+
+
+    public static final long FIND_SUGGESTION_SIMULATED_DELAY = 250;
+    private String mLastQuery = "";
 
     // define permission to request
-    String[] reqPermission = new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission
-            .ACCESS_COARSE_LOCATION};
+    String[] reqPermission = new String[]{
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION};
+
     private static final int requestCode1 = 2;
     private static final int requestCode2 = 3;
+    private String[] myDataset = new String[]{
+            "Visibility",
+            "Map Update"};
+    private RouteTask mRouteTask = null;
+    private final SimpleLineSymbol mSolvedRouteSymbol = new SimpleLineSymbol(SimpleLineSymbol.Style.SOLID, Color.GREEN, 4.0f);
+    private Stop mFromAddressResult = new Stop(new Point(9.0410, 38.7623));
+    private Stop mToAddressResult = new Stop(new Point(9.0411, 38.7637));;
 
     private static String createMobileMapPackageFilePath() {
         return extStorDir.getAbsolutePath() + File.separator + extSDCardDirName + File.separator + filename + FILE_EXTENSION;
@@ -110,31 +133,146 @@ public class MainActivity extends AppCompatActivity
 //                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
 //                        .setAction("Action", null).show();
 
-                if (mLayout != null) {
-                    if (mLayout.getPanelState() != PanelState.HIDDEN) {
-                        mLayout.setPanelState(PanelState.HIDDEN);
-                    } else {
-                        mLayout.setPanelState(PanelState.COLLAPSED);
-                    }
-                }
+//                if (mLayout != null) {
+//                    if (mLayout.getPanelState() != PanelState.HIDDEN) {
+//                        mLayout.setPanelState(PanelState.HIDDEN);
+//                    } else {
+//                        mLayout.setPanelState(PanelState.COLLAPSED);
+//                    }
+//                }
+                solveRoute();
             }
         });
         mSearchView = (FloatingSearchView) findViewById(R.id.floating_search_view);
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         mSearchView.attachNavigationDrawerToMenuButton(drawer);
 
+        mSearchView.setOnQueryChangeListener(new FloatingSearchView.OnQueryChangeListener() {
+
+            @Override
+            public void onSearchTextChanged(String oldQuery, final String newQuery) {
+
+                if (!oldQuery.equals("") && newQuery.equals("")) {
+                    mSearchView.clearSuggestions();
+                } else {
+
+                    //this shows the top left circular progress
+                    //you can call it where ever you want, but
+                    //it makes sense to do it when loading something in
+                    //the background.
+                    mSearchView.showProgress();
+
+                    //simulates a query call to a data source
+                    //with a new query.
+//                    DataHelper.findSuggestions(getActivity(), newQuery, 5,
+//                            FIND_SUGGESTION_SIMULATED_DELAY, new DataHelper.OnFindSuggestionsListener() {
+//
+//                                @Override
+//                                public void onResults(List<ColorSuggestion> results) {
+//
+//                                    //this will swap the data and
+//                                    //render the collapse/expand animations as necessary
+//                                    mSearchView.swapSuggestions(results);
+//
+//                                    //let the users know that the background
+//                                    //process has completed
+//                                    mSearchView.hideProgress();
+//                                }
+//                            });
+                }
+
+                Log.d(TAG, "onSearchTextChanged()");
+            }
+        });
+
+        mSearchView.setOnSearchListener(new FloatingSearchView.OnSearchListener() {
+            @Override
+            public void onSuggestionClicked(final SearchSuggestion searchSuggestion) {
+
+                LocationSuggestion colorSuggestion = (LocationSuggestion) searchSuggestion;
+//                DataHelper.findColors(getActivity(), colorSuggestion.getBody(),
+//                        new DataHelper.OnFindColorsListener() {
+//
+//                            @Override
+//                            public void onResults(List<ColorWrapper> results) {
+//                                mSearchResultsAdapter.swapData(results);
+//                            }
+//
+//                        });
+                Log.d(TAG, "onSuggestionClicked()");
+
+                mLastQuery = searchSuggestion.getBody();
+            }
+
+            @Override
+            public void onSearchAction(String query) {
+                mLastQuery = query;
+
+//                DataHelper.findColors(getActivity(), query,
+//                        new DataHelper.OnFindColorsListener() {
+//
+//                            @Override
+//                            public void onResults(List<ColorWrapper> results) {
+//                                mSearchResultsAdapter.swapData(results);
+//                            }
+//
+//                        });
+                Log.d(TAG, "onSearchAction()");
+            }
+        });
+
+        mSearchView.setOnFocusChangeListener(new FloatingSearchView.OnFocusChangeListener() {
+            @Override
+            public void onFocus() {
+
+                //show suggestions when search bar gains focus (typically history suggestions)
+//                mSearchView.swapSuggestions(DataHelper.getHistory(getActivity(), 3));
+
+                Log.d(TAG, "onFocus()");
+            }
+
+            @Override
+            public void onFocusCleared() {
+
+                //set the title of the bar so that when focus is returned a new query begins
+                mSearchView.setSearchBarTitle(mLastQuery);
+
+                //you can also set setSearchText(...) to make keep the query there when not focused and when focus returns
+                //mSearchView.setSearchText(searchSuggestion.getBody());
+
+                Log.d(TAG, "onFocusCleared()");
+            }
+        });
+
+        mSearchView.setOnMenuItemClickListener(new FloatingSearchView.OnMenuItemClickListener() {
+            @Override
+            public void onActionMenuItemSelected(MenuItem item) {
+
+                if (item.getItemId() == R.id.action_voice_rec) {
+
+
+                } else if (item.getItemId() == R.id.action_location) {
+                    mLocationDisplay.setAutoPanMode(LocationDisplay.AutoPanMode.RECENTER);
+                    if (!mLocationDisplay.isStarted())
+                        mLocationDisplay.startAsync();
+                } else {
+                    Toast.makeText(MainActivity.this, "NOT SURE WHICH ACTION BUTTON IS PRESSED.", Toast.LENGTH_LONG).show();
+                }
+            }
+        });
+
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
         mSlidingLayer = (SlidingLayer) findViewById(R.id.slidingLayer1);
-        swipeText = (TextView) findViewById(R.id.swipeText);
+//        swipeText = (TextView) findViewById(R.id.swipeText);
 
         int textResource;
 
         textResource = R.string.swipe_down_label;
 
         mSlidingLayer.setStickTo(SlidingLayer.STICK_TO_BOTTOM);
-        swipeText.setText(getResources().getString(textResource));
+//        swipeText.setText(getResources().getString(textResource));
 
         LayerTransformer transformer;
         transformer = new SlideJoyTransformer();
@@ -421,7 +559,21 @@ public class MainActivity extends AppCompatActivity
                 if (mapPackage.getLoadStatus() == LoadStatus.LOADED && mapPackage.getMaps().size() > 0) {
                     // add the map from the mobile map package to the MapView
                     mMapView.setMap(mapPackage.getMaps().get(0));
-//                    mapPackage.getMaps().get(0).getItem().
+                    mapPackage.getMaps().get(0).addDoneLoadingListener(new Runnable() {
+                        @Override
+                        public void run() {
+
+                            if (mapPackage.getLoadStatus() != LoadStatus.LOADED) {
+                                Snackbar.make(mMapView, String.format(getString(R.string.object_not_loaded), "Map"),
+                                        Snackbar.LENGTH_SHORT).show();
+                                return;
+                            }
+
+                            setupOfflineNetwork(mapPackage.getMaps().get(0));
+                            mapPackage.getMaps().get(0).removeDoneLoadingListener(this);
+                        }
+                    });
+
 
                 } else {
                     // Log an issue if the mobile map package fails to load
@@ -471,6 +623,94 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    // Routing functions
+
+    /**
+     * Sets up a RouteTask from the NetworkDatasets in the current map. Shows a message to user if network dataset is
+     * not found.
+     */
+    private void setupOfflineNetwork(ArcGISMap mMap) {
+
+        if ((mMap.getTransportationNetworks() == null) || (mMap.getTransportationNetworks().size() < 1)) {
+            Snackbar.make(mMapView, getString(R.string.network_dataset_not_found), Snackbar.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Create the RouteTask from network data set using same map used in display
+        mRouteTask = new RouteTask(MainActivity.this, mMap.getTransportationNetworks().get(0));
+        mRouteTask.addDoneLoadingListener(new Runnable() {
+            @Override
+            public void run() {
+                if (mRouteTask.getLoadStatus() != LoadStatus.LOADED) {
+                    Snackbar.make(mMapView, String.format(getString(R.string.object_not_loaded), "RouteTask"),
+                            Snackbar.LENGTH_SHORT).show();
+                }
+            }
+        });
+        mRouteTask.loadAsync();
+    }
+
+    /**
+     * Solves a route using the existing geocoded address and hydrant locations, and displays a graphic of the route, and
+     * message with distance and time. Shows messages to user if locations are not set.
+     */
+    private void solveRoute() {
+
+        if (mRouteTask == null ) {
+            Snackbar.make(mMapView, getString(R.string.route_task_not_set), Snackbar.LENGTH_SHORT).show();
+            return;
+        }
+
+        RouteParameters routeParams;
+        try {
+            routeParams = mRouteTask.createDefaultParametersAsync().get();
+
+            Stop start = mFromAddressResult;
+            start.setRouteName(getString(R.string.route_name));
+            start.setName(getString(R.string.stop1_name));
+            routeParams.getStops().add(start);
+
+            Stop finish = mToAddressResult;
+            finish.setRouteName(getString(R.string.route_name));
+            finish.setName(getString(R.string.stop2_name));
+            routeParams.getStops().add(finish);
+
+            final ListenableFuture<RouteResult> routeFuture = mRouteTask.solveRouteAsync(routeParams);
+            routeFuture.addDoneListener(new Runnable() {
+                @Override
+                public void run() {
+                    // Show results of solved route.
+                    RouteResult routeResult;
+                    try {
+                        routeResult = routeFuture.get();
+                        if (routeResult.getRoutes().size() > 0) {
+                            // Add first result to the map as a graphic.
+                            Route topRoute = routeResult.getRoutes().get(0);
+                            mRouteGraphic = new Graphic(topRoute.getRouteGeometry(), mSolvedRouteSymbol);
+                            mRouteGraphic.getAttributes().put("Name", topRoute.getRouteName());
+                            mRouteGraphic.setSelected(true);
+                            mRouteGraphic.setZIndex(-1);
+                            graphicsOverlay.getGraphics().add(mRouteGraphic);
+
+                            // Display route distance and time.
+                            Snackbar.make(mMapView, String.format(getString(R.string.route_result_info),
+                                    topRoute.getTotalLength(), topRoute.getTotalTime()), Snackbar.LENGTH_SHORT).show();
+
+                            mMapView.setViewpointGeometryAsync(topRoute.getRouteGeometry());
+
+                        }
+                    } catch (InterruptedException | ExecutionException e) {
+                        Snackbar.make(mMapView, String.format(getString(R.string.route_error), e.getMessage()),
+                                Snackbar.LENGTH_SHORT).show();
+                    }
+                }
+            });
+        } catch (InterruptedException | ExecutionException e) {
+            Snackbar.make(mMapView, String.format(getString(R.string.route_params_error), e.getMessage()),
+                    Snackbar.LENGTH_SHORT).show();
+        }
     }
 
 }
