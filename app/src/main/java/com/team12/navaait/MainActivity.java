@@ -49,6 +49,7 @@ import com.esri.arcgisruntime.tasks.networkanalysis.RouteParameters;
 import com.esri.arcgisruntime.tasks.networkanalysis.RouteResult;
 import com.esri.arcgisruntime.tasks.networkanalysis.RouteTask;
 import com.esri.arcgisruntime.tasks.networkanalysis.Stop;
+import com.getbase.floatingactionbutton.FloatingActionsMenu;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout.PanelSlideListener;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout.PanelState;
@@ -98,7 +99,7 @@ public class MainActivity extends AppCompatActivity
     private RecyclerView.LayoutManager mLayoutManager;
 
 
-    public static final long FIND_SUGGESTION_SIMULATED_DELAY = 250;
+
     private String mLastQuery = "";
 
     // define permission to request
@@ -127,23 +128,65 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
 
 
-        fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
+//        fab = (FloatingActionButton) findViewById(R.id.fab);
+//        fab.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+////                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+////                        .setAction("Action", null).show();
+//
+////                if (mLayout != null) {
+////                    if (mLayout.getPanelState() != PanelState.HIDDEN) {
+////                        mLayout.setPanelState(PanelState.HIDDEN);
+////                    } else {
+////                        mLayout.setPanelState(PanelState.COLLAPSED);
+////                    }
+////                }
+//                solveRoute();
+//            }
+//        });
+
+
+
+        final FloatingActionsMenu menuMultipleActions = (FloatingActionsMenu) findViewById(R.id.multiple_actions);
+
+
+
+        final com.getbase.floatingactionbutton.FloatingActionButton actionA = (com.getbase.floatingactionbutton.FloatingActionButton) findViewById(R.id.action_a);
+        actionA.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-//                        .setAction("Action", null).show();
-
-//                if (mLayout != null) {
-//                    if (mLayout.getPanelState() != PanelState.HIDDEN) {
-//                        mLayout.setPanelState(PanelState.HIDDEN);
-//                    } else {
-//                        mLayout.setPanelState(PanelState.COLLAPSED);
-//                    }
-//                }
-                solveRoute();
+                actionA.setTitle("Action A clicked");
             }
         });
+
+        final com.getbase.floatingactionbutton.FloatingActionButton actionB = (com.getbase.floatingactionbutton.FloatingActionButton) findViewById(R.id.action_b);
+        actionB.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                actionB.setTitle("Action B clicked");
+            }
+        });
+
+        final com.getbase.floatingactionbutton.FloatingActionButton actionC = (com.getbase.floatingactionbutton.FloatingActionButton) findViewById(R.id.action_c);
+        actionC.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                actionC.setTitle("Action C clicked");
+            }
+        });
+
+        final com.getbase.floatingactionbutton.FloatingActionButton actionD = (com.getbase.floatingactionbutton.FloatingActionButton) findViewById(R.id.action_d);
+        actionD.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                actionD.setTitle("Action D clicked");
+            }
+        });
+
+
+
+
         mSearchView = (FloatingSearchView) findViewById(R.id.floating_search_view);
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         mSearchView.attachNavigationDrawerToMenuButton(drawer);
