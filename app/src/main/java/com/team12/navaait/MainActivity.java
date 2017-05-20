@@ -113,8 +113,8 @@ public class MainActivity extends AppCompatActivity
             "Map Update"};
     private RouteTask mRouteTask = null;
     private final SimpleLineSymbol mSolvedRouteSymbol = new SimpleLineSymbol(SimpleLineSymbol.Style.SOLID, Color.GREEN, 4.0f);
-    private Stop mFromAddressResult = new Stop(new Point(9.0410, 38.7623));
-    private Stop mToAddressResult = new Stop(new Point(9.0411, 38.7637));;
+
+    private Point[] points = new Point[]{null, null};
 
     private static String createMobileMapPackageFilePath() {
         return extStorDir.getAbsolutePath() + File.separator + extSDCardDirName + File.separator + filename + FILE_EXTENSION;
@@ -375,6 +375,13 @@ public class MainActivity extends AppCompatActivity
                 Point mapPoint = mMapView.screenToLocation(screenPoint);
                 // convert to WGS84 for lat/lon format
                 Point wgs84Point = (Point) GeometryEngine.project(mapPoint, SpatialReferences.getWgs84());
+
+                for (int i = 0; i < points.length; i++) {
+                    if (points[i] == null) {
+                        points[i] = wgs84Point;
+                        break;
+                    }
+                }
                 // create a textview for the callout
                 TextView calloutContent = new TextView(getApplicationContext());
                 calloutContent.setTextColor(Color.BLACK);
@@ -494,7 +501,7 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
-        mLayout.setAnchorPoint(0.7f);
+        mLayout.setAnchorPoint(0.5f);
         mLayout.setPanelState(PanelState.ANCHORED);
         mLayout.setPanelState(PanelState.HIDDEN);
 
@@ -571,6 +578,7 @@ public class MainActivity extends AppCompatActivity
 
                             setupOfflineNetwork(mapPackage.getMaps().get(0));
                             mapPackage.getMaps().get(0).removeDoneLoadingListener(this);
+                            mMapView.getGraphicsOverlays().add(graphicsOverlay);
                         }
                     });
 
@@ -588,7 +596,6 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
-
 
 
         } else {
@@ -658,7 +665,7 @@ public class MainActivity extends AppCompatActivity
      */
     private void solveRoute() {
 
-        if (mRouteTask == null ) {
+        if (mRouteTask == null) {
             Snackbar.make(mMapView, getString(R.string.route_task_not_set), Snackbar.LENGTH_SHORT).show();
             return;
         }
@@ -666,44 +673,58 @@ public class MainActivity extends AppCompatActivity
         RouteParameters routeParams;
         try {
             routeParams = mRouteTask.createDefaultParametersAsync().get();
+            routeParams.setReturnDirections(true);
 
-            Stop start = mFromAddressResult;
-            start.setRouteName(getString(R.string.route_name));
-            start.setName(getString(R.string.stop1_name));
+
+            Stop start = new Stop(points[0]);
+//            start.setRouteName(getString(R.string.route_name));
+//            start.setName(getString(R.string.stop1_name));
             routeParams.getStops().add(start);
 
-            Stop finish = mToAddressResult;
-            finish.setRouteName(getString(R.string.route_name));
-            finish.setName(getString(R.string.stop2_name));
+            Stop finish = new Stop(points[1]);
+//            finish.setRouteName(getString(R.string.route_name));
+//            finish.setName(getString(R.string.stop2_name));
             routeParams.getStops().add(finish);
 
             final ListenableFuture<RouteResult> routeFuture = mRouteTask.solveRouteAsync(routeParams);
+
             routeFuture.addDoneListener(new Runnable() {
                 @Override
                 public void run() {
                     // Show results of solved route.
                     RouteResult routeResult;
                     try {
-                        routeResult = routeFuture.get();
-                        if (routeResult.getRoutes().size() > 0) {
-                            // Add first result to the map as a graphic.
-                            Route topRoute = routeResult.getRoutes().get(0);
-                            mRouteGraphic = new Graphic(topRoute.getRouteGeometry(), mSolvedRouteSymbol);
-                            mRouteGraphic.getAttributes().put("Name", topRoute.getRouteName());
-                            mRouteGraphic.setSelected(true);
-                            mRouteGraphic.setZIndex(-1);
-                            graphicsOverlay.getGraphics().add(mRouteGraphic);
+                        if (routeFuture.isDone()) {
+                            int i = 0;
+                            routeResult = routeFuture.get();
+                            if (routeResult.getRoutes().size() > 0) {
+                                //  Add first result to the map as a graphic.
+                                Route topRoute = routeResult.getRoutes().get(0);
+                                mRouteGraphic = new Graphic(topRoute.getRouteGeometry(), mSolvedRouteSymbol);
+                                mRouteGraphic.setSelected(true);
+                                mRouteGraphic.setVisible(true);
 
-                            // Display route distance and time.
-                            Snackbar.make(mMapView, String.format(getString(R.string.route_result_info),
-                                    topRoute.getTotalLength(), topRoute.getTotalTime()), Snackbar.LENGTH_SHORT).show();
+                                mRouteGraphic.setGeometry(topRoute.getRouteGeometry());
+                                mRouteGraphic.setZIndex(5);
+                                graphicsOverlay.getGraphics().add(mRouteGraphic);
+                                graphicsOverlay.setVisible(true);
+                                graphicsOverlay.setOpacity(1.0f);
+                                graphicsOverlay.setSelectionColor(0x56467839);
 
-                            mMapView.setViewpointGeometryAsync(topRoute.getRouteGeometry());
+
+                                // Display route distance and time.
+                                Snackbar.make(mMapView,
+                                        topRoute.getRouteName(), Snackbar.LENGTH_SHORT).show();
+
+                                mMapView.setViewpointGeometryAsync(topRoute.getRouteGeometry());
+
+                            }
 
                         }
                     } catch (InterruptedException | ExecutionException e) {
                         Snackbar.make(mMapView, String.format(getString(R.string.route_error), e.getMessage()),
                                 Snackbar.LENGTH_SHORT).show();
+                        Log.e("SOLVE", e.getMessage());
                     }
                 }
             });
