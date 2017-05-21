@@ -1,6 +1,7 @@
 package com.team12.navaait;
 
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,14 +13,11 @@ import android.widget.TextView;
  */
 
 public class MyAdapter extends RecyclerView.Adapter<MyAdapter.DataObjectHolder> {
-    private String[] mDataset;
 
-    // Provide a reference to the views for each data item
-    // Complex data items may need more than one view per item, and
-    // you provide access to all the views for a data item in a view holder
-    public static class DataObjectHolder extends RecyclerView.ViewHolder
-            implements View
-            .OnClickListener {
+    private static final String LOG_TAG = "ADAPTER";
+
+    private String[] mDataset;
+    public static class DataObjectHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         TextView label;
         Switch aSwitch;
 
@@ -27,7 +25,7 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.DataObjectHolder> 
             super(itemView);
             label = (TextView) itemView.findViewById(R.id.textView2);
             aSwitch = (Switch) itemView.findViewById(R.id.switch1);
-//            Log.i(LOG_TAG, "Adding Listener");
+            Log.i(LOG_TAG, "Adding Listener");
             itemView.setOnClickListener(this);
         }
 
@@ -50,7 +48,6 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.DataObjectHolder> 
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.card_view, parent, false);
         // set the view's size, margins, paddings and layout parameters
-//        ...
 
         DataObjectHolder dataObjectHolder = new DataObjectHolder(view);
         return dataObjectHolder;
@@ -62,7 +59,7 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.DataObjectHolder> 
         // - get element from your dataset at this position
         // - replace the contents of the view with that element
         holder.label.setText(mDataset[position]);
-        if (position == 1){
+        if (position == 1) {
             holder.aSwitch.setVisibility(View.INVISIBLE);
         }
 

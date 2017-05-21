@@ -7,7 +7,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:gravity="bottom"
-    sothree:umanoDragView="@+id/dragView"
+    sothree:umanoDragView="@+id/drag_view"
     sothree:umanoOverlay="true"
     sothree:umanoPanelHeight="68dp"
     sothree:umanoParallaxOffset="100dp"
@@ -16,9 +16,6 @@
     tools:context="com.team12.navaait.MainActivity"
     tools:showIn="@layout/app_bar_main">
 
-
-
-
     <android.support.constraint.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -26,7 +23,7 @@
 
         <!-- MapView -->
         <com.esri.arcgisruntime.mapping.view.MapView
-            android:id="@+id/mapView"
+            android:id="@+id/map_view"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -34,6 +31,7 @@
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
+            <!--FloatingSearchView-->
             <com.arlib.floatingsearchview.FloatingSearchView
                 android:id="@+id/floating_search_view"
                 android:layout_width="match_parent"
@@ -50,15 +48,11 @@
 
         </com.esri.arcgisruntime.mapping.view.MapView>
 
-
-
-
-
-
     </android.support.constraint.ConstraintLayout>
+
     <!-- SLIDING LAYOUT -->
     <LinearLayout
-        android:id="@+id/dragView"
+        android:id="@+id/drag_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="#ffffff"
@@ -69,40 +63,55 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="68dp"
-            android:orientation="horizontal">
+            android:background="@color/colorPrimary"
+            android:orientation="vertical">
 
             <TextView
-                android:id="@+id/name"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:gravity="center_vertical"
-                android:paddingLeft="10dp"
-                android:textSize="14sp" />
-
-            <Button
-                android:id="@+id/follow"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:gravity="center_vertical|right"
-                android:paddingLeft="10dp"
-                android:paddingRight="10dp"
-                android:textSize="14sp" />
-
-
-
+                android:id="@+id/location_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:layout_marginTop="15dp"
+                android:gravity="fill_horizontal"
+                android:textColor="@color/primary_light"
+                android:textSize="26sp" />
 
         </LinearLayout>
+
+        <GridLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:columnCount="2">
+
+            <Button
+                android:id="@+id/show_location"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_column="0"
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp"
+                android:textSize="20sp" />
+
+            <Button
+                android:id="@+id/show_directions"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_column="1"
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp"
+                android:textSize="20sp" />
+
+        </GridLayout>
 
         <ListView
             android:id="@+id/list"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="1"></ListView>
+            android:layout_weight="1">
+
+        </ListView>
+
     </LinearLayout>
-
-
-
 
 </com.sothree.slidinguppanel.SlidingUpPanelLayout>
 

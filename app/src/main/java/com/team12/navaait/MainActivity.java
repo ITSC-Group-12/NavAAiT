@@ -6,7 +6,6 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
@@ -16,7 +15,6 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -49,12 +47,11 @@ import com.esri.arcgisruntime.tasks.networkanalysis.RouteParameters;
 import com.esri.arcgisruntime.tasks.networkanalysis.RouteResult;
 import com.esri.arcgisruntime.tasks.networkanalysis.RouteTask;
 import com.esri.arcgisruntime.tasks.networkanalysis.Stop;
+import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.getbase.floatingactionbutton.FloatingActionsMenu;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout.PanelSlideListener;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout.PanelState;
-import com.team12.navaait.domain.LocationSuggestion;
-import com.wunderlist.slidinglayer.LayerTransformer;
 import com.wunderlist.slidinglayer.SlidingLayer;
 import com.wunderlist.slidinglayer.transformer.SlideJoyTransformer;
 
@@ -63,46 +60,58 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-//import android.support.design.widget.Snackbar;
+public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
-public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
-
-    public static final long FIND_SUGGESTION_SIMULATED_DELAY = 250;
-    public static final String LoginSpTAG = "Logged in";
+    // TAGS
+    public static final String loginTAG = "Logged in";
+    private static final String sTag = "Gesture";
     private static final String TAG = "MMPK";
+
+    // CONSTANTS
+    private static final int OFFSET_DISTANCE = 0;
+    private static final int PREVIEW_OFFSET = -1;
+    public static final long FIND_SUGGESTION_SIMULATED_DELAY = 250;
     private static final String FILE_EXTENSION = ".mmpk";
+    private static final String[] SETTINGS_ITEMS = new String[]{"Visibility", "Map Update"};
+
+    // VIEWS
+    private MapView mMapView;
+    private RecyclerView mRecyclerView;
+    private NavigationView navigationView;
+    private FloatingSearchView mSearchView;
+    private SlidingLayer mSlidingLayer;
+    private SlidingUpPanelLayout mLayout;
+    private DrawerLayout drawer;
+    private TextView mSwipeText;
+    private TextView t;
+    private Button f1;
+    private Button f2;
+    private ListView lv;
+    private FloatingActionsMenu menuMultipleActions;
+    private FloatingActionButton actionA;
+    private FloatingActionButton actionB;
+    private FloatingActionButton actionC;
+    private FloatingActionButton actionD;
+
+    //Map Stuff
     private static File extStorDir;
     private static String extSDCardDirName;
     private static String filename;
     private static String mmpkFilePath;
-    private MapView mMapView;
     private MobileMapPackage mapPackage;
-    private FloatingSearchView mSearchView;
-
-    private SlidingUpPanelLayout mLayout;
-
-    private SlidingLayer mSlidingLayer;
-    private TextView swipeText;
-
-    private FloatingActionButton fab;
-
-    private static final String sTag = "Gesture";
     private Callout mCallout;
-    private Graphic mRouteGraphic;
-
     private LocationDisplay mLocationDisplay;
     private GraphicsOverlay graphicsOverlay = new GraphicsOverlay();
+    private final SimpleLineSymbol mSolvedRouteSymbol = new SimpleLineSymbol(SimpleLineSymbol.Style.SOLID, Color.GREEN, 4.0f);
+    private RouteTask mRouteTask = null;
+    private Graphic mRouteGraphic;
 
-    private RecyclerView mRecyclerView;
-    private RecyclerView.Adapter mAdapter;
-    private RecyclerView.LayoutManager mLayoutManager;
+    private Point[] points = new Point[]{null, null};
 
-
-
+    // Search Stuff
     private String mLastQuery = "";
 
-    // define permission to request
+    // Permission List
     String[] reqPermission = new String[]{
             Manifest.permission.WRITE_EXTERNAL_STORAGE,
             Manifest.permission.ACCESS_FINE_LOCATION,
@@ -110,13 +119,6 @@ public class MainActivity extends AppCompatActivity
 
     private static final int requestCode1 = 2;
     private static final int requestCode2 = 3;
-    private String[] myDataset = new String[]{
-            "Visibility",
-            "Map Update"};
-    private RouteTask mRouteTask = null;
-    private final SimpleLineSymbol mSolvedRouteSymbol = new SimpleLineSymbol(SimpleLineSymbol.Style.SOLID, Color.GREEN, 4.0f);
-
-    private Point[] points = new Point[]{null, null};
 
     private static String createMobileMapPackageFilePath() {
         return extStorDir.getAbsolutePath() + File.separator + extSDCardDirName + File.separator + filename + FILE_EXTENSION;
@@ -127,32 +129,83 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        mSwipeText = (TextView) findViewById(R.id.swipe_down);
+        t = (TextView) findViewById(R.id.location_name);
+        f1 = (Button) findViewById(R.id.show_location);
+        f2 = (Button) findViewById(R.id.show_directions);
+        mSearchView = (FloatingSearchView) findViewById(R.id.floating_search_view);
+        navigationView = (NavigationView) findViewById(R.id.nav_view);
+        mMapView = (MapView) findViewById(R.id.map_view);
+        mSlidingLayer = (SlidingLayer) findViewById(R.id.slidingLayer1);
+        mLayout = (SlidingUpPanelLayout) findViewById(R.id.sliding_layout);
+        drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        mRecyclerView = (RecyclerView) findViewById(R.id.my_recycler_view);
+        menuMultipleActions = (FloatingActionsMenu) findViewById(R.id.multiple_actions);
+        actionA = (FloatingActionButton) findViewById(R.id.action_a);
+        actionB = (FloatingActionButton) findViewById(R.id.action_b);
+        actionC = (FloatingActionButton) findViewById(R.id.action_c);
+        actionD = (FloatingActionButton) findViewById(R.id.action_d);
+        lv = (ListView) findViewById(R.id.list);
 
-//        fab = (FloatingActionButton) findViewById(R.id.fab);
-//        fab.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-////                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-////                        .setAction("Action", null).show();
-//
-////                if (mLayout != null) {
-////                    if (mLayout.getPanelState() != PanelState.HIDDEN) {
-////                        mLayout.setPanelState(PanelState.HIDDEN);
-////                    } else {
-////                        mLayout.setPanelState(PanelState.COLLAPSED);
-////                    }
-////                }
-//                solveRoute();
-//            }
-//        });
+        navigationView.setNavigationItemSelectedListener(this);
+        mSearchView.attachNavigationDrawerToMenuButton(drawer);
+        mSwipeText.setText(getResources().getString(R.string.swipe_down_label));
 
+        mSlidingLayer.setStickTo(SlidingLayer.STICK_TO_BOTTOM);
+        mSlidingLayer.setLayerTransformer(new SlideJoyTransformer());
+        mSlidingLayer.setShadowSizeRes(R.dimen.shadow_size);
+        mSlidingLayer.setShadowDrawable(R.drawable.sidebar_shadow);
+        mSlidingLayer.setOffsetDistance(OFFSET_DISTANCE);
+        mSlidingLayer.setPreviewOffsetDistance(PREVIEW_OFFSET);
+        mSlidingLayer.closeLayer(true);
 
+        mRecyclerView.setHasFixedSize(true);
+        mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        mRecyclerView.setAdapter(new MyAdapter(SETTINGS_ITEMS));
 
-        final FloatingActionsMenu menuMultipleActions = (FloatingActionsMenu) findViewById(R.id.multiple_actions);
+        // has to be 0.6 to avoid FloatingSearchView hanging from top
+        mLayout.setAnchorPoint(0.6f);
+        mLayout.setPanelState(PanelState.ANCHORED);
+        mLayout.setPanelState(PanelState.HIDDEN);
 
+        // get the MapView's LocationDisplay
+        mLocationDisplay = mMapView.getLocationDisplay();
 
+        // get sdcard resource name
+        extStorDir = Environment.getExternalStorageDirectory();
+        // get the directory
+        extSDCardDirName = this.getResources().getString(R.string.config_data_sdcard_offline_dir);
+        // get mobile map package filename
+        filename = this.getResources().getString(R.string.config_mmpk_name);
+        // create the full path to the mobile map package file
+        mmpkFilePath = createMobileMapPackageFilePath();
 
-        final com.getbase.floatingactionbutton.FloatingActionButton actionA = (com.getbase.floatingactionbutton.FloatingActionButton) findViewById(R.id.action_a);
+        // start showing location
+        if (!mLocationDisplay.isStarted()) {
+            mLocationDisplay.setAutoPanMode(LocationDisplay.AutoPanMode.COMPASS_NAVIGATION);
+            mLocationDisplay.startAsync();
+        }
+
+        List<String> your_array_list = Arrays.asList(
+                "This",
+                "Is",
+                "An",
+                "Example",
+                "ListView"
+        );
+        // This is the array adapter, it takes the context of the activity as a
+        // first parameter, the type of list view as a second parameter and your array as a third parameter.
+        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(
+                this,
+                android.R.layout.simple_list_item_1,
+                your_array_list);
+
+        lv.setAdapter(arrayAdapter);
+
+        t.setText("The Library");
+        f1.setText("Show on Map");
+        f2.setText("Show Directions");
+
         actionA.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -160,7 +213,6 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
-        final com.getbase.floatingactionbutton.FloatingActionButton actionB = (com.getbase.floatingactionbutton.FloatingActionButton) findViewById(R.id.action_b);
         actionB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -168,28 +220,26 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
-        final com.getbase.floatingactionbutton.FloatingActionButton actionC = (com.getbase.floatingactionbutton.FloatingActionButton) findViewById(R.id.action_c);
         actionC.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                actionC.setTitle("Action C clicked");
+                if (mLayout != null) {
+                    if (mLayout.getPanelState() != PanelState.HIDDEN) {
+                        mLayout.setPanelState(PanelState.HIDDEN);
+                    } else {
+                        mLayout.setPanelState(PanelState.COLLAPSED);
+                    }
+                }
             }
         });
 
-        final com.getbase.floatingactionbutton.FloatingActionButton actionD = (com.getbase.floatingactionbutton.FloatingActionButton) findViewById(R.id.action_d);
         actionD.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 actionD.setTitle("Action D clicked");
+                solveRoute();
             }
         });
-
-
-
-
-        mSearchView = (FloatingSearchView) findViewById(R.id.floating_search_view);
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        mSearchView.attachNavigationDrawerToMenuButton(drawer);
 
         mSearchView.setOnQueryChangeListener(new FloatingSearchView.OnQueryChangeListener() {
 
@@ -200,29 +250,24 @@ public class MainActivity extends AppCompatActivity
                     mSearchView.clearSuggestions();
                 } else {
 
-                    //this shows the top left circular progress
-                    //you can call it where ever you want, but
-                    //it makes sense to do it when loading something in
-                    //the background.
+                    //this shows the top left circular progress you can call it where ever you want, but
+                    //it makes sense to do it when loading something in the background.
                     mSearchView.showProgress();
 
-                    //simulates a query call to a data source
-                    //with a new query.
-//                    DataHelper.findSuggestions(getActivity(), newQuery, 5,
-//                            FIND_SUGGESTION_SIMULATED_DELAY, new DataHelper.OnFindSuggestionsListener() {
-//
-//                                @Override
-//                                public void onResults(List<ColorSuggestion> results) {
-//
-//                                    //this will swap the data and
-//                                    //render the collapse/expand animations as necessary
-//                                    mSearchView.swapSuggestions(results);
-//
-//                                    //let the users know that the background
-//                                    //process has completed
-//                                    mSearchView.hideProgress();
-//                                }
-//                            });
+                    //simulates a query call to a data sourcewith a new query.
+                    DataHelper.findSuggestions(getApplicationContext(), newQuery, 5,
+                            FIND_SUGGESTION_SIMULATED_DELAY, new DataHelper.OnFindSuggestionsListener() {
+
+                                @Override
+                                public void onResults(List<NameSuggestion> results) {
+
+                                    //this will swap the data and render the collapse/expand animations as necessary
+                                    mSearchView.swapSuggestions(results);
+
+                                    //let the users know that the background process has completed
+                                    mSearchView.hideProgress();
+                                }
+                            });
                 }
 
                 Log.d(TAG, "onSearchTextChanged()");
@@ -233,7 +278,11 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onSuggestionClicked(final SearchSuggestion searchSuggestion) {
 
-                LocationSuggestion colorSuggestion = (LocationSuggestion) searchSuggestion;
+                mLocationDisplay.setAutoPanMode(LocationDisplay.AutoPanMode.RECENTER);
+                if (!mLocationDisplay.isStarted())
+                    mLocationDisplay.startAsync();
+
+//                 LocationSuggestion colorSuggestion = (LocationSuggestion) searchSuggestion;
 //                DataHelper.findColors(getActivity(), colorSuggestion.getBody(),
 //                        new DataHelper.OnFindColorsListener() {
 //
@@ -251,6 +300,10 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onSearchAction(String query) {
                 mLastQuery = query;
+
+                mLocationDisplay.setAutoPanMode(LocationDisplay.AutoPanMode.RECENTER);
+                if (!mLocationDisplay.isStarted())
+                    mLocationDisplay.startAsync();
 
 //                DataHelper.findColors(getActivity(), query,
 //                        new DataHelper.OnFindColorsListener() {
@@ -294,44 +347,18 @@ public class MainActivity extends AppCompatActivity
 
                 if (item.getItemId() == R.id.action_voice_rec) {
 
+                    //  TODO add speech recognition
 
                 } else if (item.getItemId() == R.id.action_location) {
                     mLocationDisplay.setAutoPanMode(LocationDisplay.AutoPanMode.RECENTER);
                     if (!mLocationDisplay.isStarted())
                         mLocationDisplay.startAsync();
                 } else {
-                    Toast.makeText(MainActivity.this, "NOT SURE WHICH ACTION BUTTON IS PRESSED.", Toast.LENGTH_LONG).show();
+                    Toast.makeText(MainActivity.this, "NOT SURE WHICH SEARCH VIEW ACTION BUTTON IS PRESSED.", Toast.LENGTH_LONG).show();
                 }
             }
         });
 
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(this);
-
-        mSlidingLayer = (SlidingLayer) findViewById(R.id.slidingLayer1);
-//        swipeText = (TextView) findViewById(R.id.swipeText);
-
-        int textResource;
-
-        textResource = R.string.swipe_down_label;
-
-        mSlidingLayer.setStickTo(SlidingLayer.STICK_TO_BOTTOM);
-//        swipeText.setText(getResources().getString(textResource));
-
-        LayerTransformer transformer;
-        transformer = new SlideJoyTransformer();
-        mSlidingLayer.setLayerTransformer(transformer);
-
-        mSlidingLayer.setShadowSizeRes(R.dimen.shadow_size);
-        mSlidingLayer.setShadowDrawable(R.drawable.sidebar_shadow);
-
-        int offsetDistance = 0;
-        mSlidingLayer.setOffsetDistance(offsetDistance);
-
-        int previewOffset = -1;
-        mSlidingLayer.setPreviewOffsetDistance(previewOffset);
-
-        mSlidingLayer.closeLayer(true);
 
         mSearchView.setOnQueryChangeListener(new FloatingSearchView.OnQueryChangeListener() {
             @Override
@@ -340,14 +367,11 @@ public class MainActivity extends AppCompatActivity
                     mSearchView.clearSuggestions();
                 } else {
 
-                    //this shows the top left circular progress
-                    //you can call it where ever you want, but
-                    //it makes sense to do it when loading something in
-                    //the background.
+                    //this shows the top left circular progress you can call it where ever you want, but
+                    //it makes sense to do it when loading something in the background.
                     mSearchView.showProgress();
 
-                    //simulates a query call to a data source
-                    //with a new query.
+                    //simulates a query call to a data source with a new query.
                     DataHelper.findSuggestions(MainActivity.this, newQuery, 5,
                             FIND_SUGGESTION_SIMULATED_DELAY, new DataHelper.OnFindSuggestionsListener() {
 
@@ -373,24 +397,21 @@ public class MainActivity extends AppCompatActivity
         mSlidingLayer.setOnInteractListener(new SlidingLayer.OnInteractListener() {
             @Override
             public void onOpen() {
-
             }
 
             @Override
             public void onShowPreview() {
-
             }
 
             @Override
             public void onClose() {
-                if (!fab.isShown()) {
-                    fab.show();
+                if (!menuMultipleActions.isShown()) {
+                    menuMultipleActions.setVisibility(View.VISIBLE);
                 }
             }
 
             @Override
             public void onOpened() {
-
             }
 
             @Override
@@ -404,34 +425,6 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
-        mRecyclerView = (RecyclerView) findViewById(R.id.my_recycler_view);
-
-        // use this setting to improve performance if you know that changes
-        // in content do not change the layout size of the RecyclerView
-        //mRecyclerView.setHasFixedSize(true);
-
-        // use a linear layout manager
-        mLayoutManager = new LinearLayoutManager(this);
-        mRecyclerView.setLayoutManager(mLayoutManager);
-
-        // specify an adapter (see also next example)
-        mAdapter = new MyAdapter(myDataset);
-        mRecyclerView.setAdapter(mAdapter);
-
-        // get sdcard resource name
-        extStorDir = Environment.getExternalStorageDirectory();
-        // get the directory
-        extSDCardDirName = this.getResources().getString(R.string.config_data_sdcard_offline_dir);
-        // get mobile map package filename
-        filename = this.getResources().getString(R.string.config_mmpk_name);
-        // create the full path to the mobile map package file
-        mmpkFilePath = createMobileMapPackageFilePath();
-
-        // retrieve the MapView from layout
-        mMapView = (MapView) findViewById(R.id.mapView);
-
-        // get the MapView's LocationDisplay
-        mLocationDisplay = mMapView.getLocationDisplay();
 
         // For API level 23+ request permission at runtime
         if (ContextCompat.checkSelfPermission(MainActivity.this, reqPermission[0]) == PackageManager.PERMISSION_GRANTED) {
@@ -518,13 +511,7 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
-        // start showing location
-        if (!mLocationDisplay.isStarted()) {
-            mLocationDisplay.setAutoPanMode(LocationDisplay.AutoPanMode.COMPASS_NAVIGATION);
-            mLocationDisplay.startAsync();
-        }
 
-        ListView lv = (ListView) findViewById(R.id.list);
         lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -532,25 +519,7 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
-        List<String> your_array_list = Arrays.asList(
-                "This",
-                "Is",
-                "An",
-                "Example",
-                "ListView"
-        );
 
-        // This is the array adapter, it takes the context of the activity as a
-        // first parameter, the type of list view as a second parameter and your
-        // array as a third parameter.
-        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(
-                this,
-                android.R.layout.simple_list_item_1,
-                your_array_list);
-
-        lv.setAdapter(arrayAdapter);
-
-        mLayout = (SlidingUpPanelLayout) findViewById(R.id.sliding_layout);
         mLayout.addPanelSlideListener(new PanelSlideListener() {
             @Override
             public void onPanelSlide(View panel, float slideOffset) {
@@ -570,21 +539,20 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
-        TextView t = (TextView) findViewById(R.id.name);
-        t.setText("Hello");
-        Button f = (Button) findViewById(R.id.follow);
-        f.setText("Action");
-        f.setMovementMethod(LinkMovementMethod.getInstance());
-        f.setOnClickListener(new View.OnClickListener() {
+
+        f1.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+            }
+        });
+        f2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
             }
         });
 
-        mLayout.setAnchorPoint(0.5f);
-        mLayout.setPanelState(PanelState.ANCHORED);
-        mLayout.setPanelState(PanelState.HIDDEN);
 
     }
 
@@ -633,7 +601,6 @@ public class MainActivity extends AppCompatActivity
      * @param mmpkFile Full path to mmpk file
      */
     private void loadMobileMapPackage(String mmpkFile) {
-        //[DocRef: Name=Open Mobile Map Package-android, Category=Work with maps, Topic=Create an offline map]
         // create the mobile map package
         mapPackage = new MobileMapPackage(mmpkFile);
         // load the mobile map package asynchronously
@@ -698,13 +665,11 @@ public class MainActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_share) {
-            // Handle the camera action
-        } else if (id == R.id.nav_settings) {
+        if (id == R.id.nav_settings) {
 
             mSlidingLayer.openLayer(true);
-            if (fab.isShown()) {
-                fab.hide();
+            if (menuMultipleActions.isShown()) {
+                menuMultipleActions.setVisibility(View.INVISIBLE);
             }
         }
 
@@ -732,8 +697,7 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void run() {
                 if (mRouteTask.getLoadStatus() != LoadStatus.LOADED) {
-                    Snackbar.make(mMapView, String.format(getString(R.string.object_not_loaded), "RouteTask"),
-                            Snackbar.LENGTH_SHORT).show();
+                    Snackbar.make(mMapView, String.format(getString(R.string.object_not_loaded), "RouteTask"), Snackbar.LENGTH_SHORT).show();
                 }
             }
         });
@@ -756,15 +720,10 @@ public class MainActivity extends AppCompatActivity
             routeParams = mRouteTask.createDefaultParametersAsync().get();
             routeParams.setReturnDirections(true);
 
-
             Stop start = new Stop(points[0]);
-//            start.setRouteName(getString(R.string.route_name));
-//            start.setName(getString(R.string.stop1_name));
             routeParams.getStops().add(start);
 
             Stop finish = new Stop(points[1]);
-//            finish.setRouteName(getString(R.string.route_name));
-//            finish.setName(getString(R.string.stop2_name));
             routeParams.getStops().add(finish);
 
             final ListenableFuture<RouteResult> routeFuture = mRouteTask.solveRouteAsync(routeParams);
