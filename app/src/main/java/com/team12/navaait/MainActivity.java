@@ -60,6 +60,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
     // TAGS
@@ -75,23 +78,40 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private static final String[] SETTINGS_ITEMS = new String[]{"Visibility", "Map Update"};
 
     // VIEWS
-    private MapView mMapView;
-    private RecyclerView mRecyclerView;
-    private NavigationView navigationView;
-    private FloatingSearchView mSearchView;
-    private SlidingLayer mSlidingLayer;
-    private SlidingUpPanelLayout mLayout;
-    private DrawerLayout drawer;
-    private TextView mSwipeText;
-    private TextView t;
-    private Button f1;
-    private Button f2;
-    private ListView lv;
-    private FloatingActionsMenu menuMultipleActions;
-    private FloatingActionButton actionA;
-    private FloatingActionButton actionB;
-    private FloatingActionButton actionC;
-    private FloatingActionButton actionD;
+    @BindView(R.id.map_view)
+    MapView mMapView;
+    @BindView(R.id.my_recycler_view)
+    RecyclerView mRecyclerView;
+    @BindView(R.id.nav_view)
+    NavigationView navigationView;
+    @BindView(R.id.floating_search_view)
+    FloatingSearchView mSearchView;
+    @BindView(R.id.slidingLayer1)
+    SlidingLayer mSlidingLayer;
+    @BindView(R.id.sliding_layout)
+    SlidingUpPanelLayout mLayout;
+    @BindView(R.id.drawer_layout)
+    DrawerLayout drawer;
+    @BindView(R.id.swipe_down)
+    TextView mSwipeText;
+    @BindView(R.id.location_name)
+    TextView t;
+    @BindView(R.id.show_location)
+    Button f1;
+    @BindView(R.id.show_directions)
+    Button f2;
+    @BindView(R.id.list)
+    ListView lv;
+    @BindView(R.id.multiple_actions)
+    FloatingActionsMenu menuMultipleActions;
+    @BindView(R.id.action_a)
+    FloatingActionButton actionA;
+    @BindView(R.id.action_b)
+    FloatingActionButton actionB;
+    @BindView(R.id.action_c)
+    FloatingActionButton actionC;
+    @BindView(R.id.action_d)
+    FloatingActionButton actionD;
 
     //Map Stuff
     private static File extStorDir;
@@ -128,24 +148,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        mSwipeText = (TextView) findViewById(R.id.swipe_down);
-        t = (TextView) findViewById(R.id.location_name);
-        f1 = (Button) findViewById(R.id.show_location);
-        f2 = (Button) findViewById(R.id.show_directions);
-        mSearchView = (FloatingSearchView) findViewById(R.id.floating_search_view);
-        navigationView = (NavigationView) findViewById(R.id.nav_view);
-        mMapView = (MapView) findViewById(R.id.map_view);
-        mSlidingLayer = (SlidingLayer) findViewById(R.id.slidingLayer1);
-        mLayout = (SlidingUpPanelLayout) findViewById(R.id.sliding_layout);
-        drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        mRecyclerView = (RecyclerView) findViewById(R.id.my_recycler_view);
-        menuMultipleActions = (FloatingActionsMenu) findViewById(R.id.multiple_actions);
-        actionA = (FloatingActionButton) findViewById(R.id.action_a);
-        actionB = (FloatingActionButton) findViewById(R.id.action_b);
-        actionC = (FloatingActionButton) findViewById(R.id.action_c);
-        actionD = (FloatingActionButton) findViewById(R.id.action_d);
-        lv = (ListView) findViewById(R.id.list);
+        ButterKnife.bind(this);
 
         navigationView.setNavigationItemSelectedListener(this);
         mSearchView.attachNavigationDrawerToMenuButton(drawer);
