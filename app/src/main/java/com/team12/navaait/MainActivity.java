@@ -56,6 +56,10 @@ import com.sothree.slidinguppanel.SlidingUpPanelLayout.PanelState;
 import com.wunderlist.slidinglayer.SlidingLayer;
 import com.wunderlist.slidinglayer.transformer.SlideJoyTransformer;
 
+import org.osmdroid.tileprovider.MapTileProviderBasic;
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
+import org.osmdroid.views.overlay.TilesOverlay;
+
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
