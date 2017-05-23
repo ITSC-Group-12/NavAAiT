@@ -25,6 +25,7 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ViewFlipper;
 
 import com.arlib.floatingsearchview.FloatingSearchView;
 import com.arlib.floatingsearchview.suggestions.model.SearchSuggestion;
@@ -80,6 +81,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     // VIEWS
     @BindView(R.id.map_view)
     MapView mMapView;
+    @BindView(R.id.map_view2)
+    org.osmdroid.views.MapView mMapView2;
+    @BindView(R.id.view_flipper)
+    ViewFlipper viewFlipper;
     @BindView(R.id.my_recycler_view)
     RecyclerView mRecyclerView;
     @BindView(R.id.nav_view)
@@ -149,6 +154,19 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
+
+        mMapView2.setTilesScaledToDpi(true);
+        mMapView2.setBuiltInZoomControls(true);
+        mMapView2.getController().setZoom(18);
+
+        TilesOverlay mTilesOverlay;
+        MapTileProviderBasic mProvider;
+
+        mProvider = new MapTileProviderBasic(getApplicationContext());
+        mProvider.setTileSource(TileSourceFactory.DEFAULT_TILE_SOURCE);
+
+        mTilesOverlay = new TilesOverlay(mProvider, getBaseContext());
+        mMapView2.getOverlays().add(mTilesOverlay);
 
         navigationView.setNavigationItemSelectedListener(this);
         mSearchView.attachNavigationDrawerToMenuButton(drawer);
@@ -220,6 +238,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             @Override
             public void onClick(View view) {
                 actionB.setTitle("Action B clicked");
+                viewFlipper.showNext();
             }
         });
 

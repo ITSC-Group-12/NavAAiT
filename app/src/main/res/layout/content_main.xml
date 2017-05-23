@@ -16,39 +16,64 @@
     tools:context="com.team12.navaait.MainActivity"
     tools:showIn="@layout/app_bar_main">
 
-    <android.support.constraint.ConstraintLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <!-- MapView -->
-        <com.esri.arcgisruntime.mapping.view.MapView
-            android:id="@+id/map_view"
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+        <ViewFlipper
+            android:id="@+id/view_flipper"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
 
-            <!--FloatingSearchView-->
-            <com.arlib.floatingsearchview.FloatingSearchView
-                android:id="@+id/floating_search_view"
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                app:floatingSearch_close_search_on_keyboard_dismiss="true"
-                app:floatingSearch_leftActionMode="showHamburger"
-                app:floatingSearch_menu="@menu/menu_main"
-                app:floatingSearch_searchBarMarginLeft="@dimen/search_view_inset"
-                app:floatingSearch_searchBarMarginRight="@dimen/search_view_inset"
-                app:floatingSearch_searchBarMarginTop="@dimen/search_view_inset"
-                app:floatingSearch_searchHint="Search..."
-                app:floatingSearch_showSearchKey="false"
-                app:floatingSearch_suggestionsListAnimDuration="250" />
+                android:layout_height="match_parent">
+                <!-- MapView -->
+                <com.esri.arcgisruntime.mapping.view.MapView
+                    android:id="@+id/map_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintRight_toRightOf="parent"
+                    app:layout_constraintTop_toTopOf="parent">
 
-        </com.esri.arcgisruntime.mapping.view.MapView>
+                    <!--FloatingSearchView-->
+                    <com.arlib.floatingsearchview.FloatingSearchView
+                        android:id="@+id/floating_search_view"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        app:floatingSearch_close_search_on_keyboard_dismiss="true"
+                        app:floatingSearch_leftActionMode="showHamburger"
+                        app:floatingSearch_menu="@menu/menu_main"
+                        app:floatingSearch_searchBarMarginLeft="@dimen/search_view_inset"
+                        app:floatingSearch_searchBarMarginRight="@dimen/search_view_inset"
+                        app:floatingSearch_searchBarMarginTop="@dimen/search_view_inset"
+                        app:floatingSearch_searchHint="Search..."
+                        app:floatingSearch_showSearchKey="false"
+                        app:floatingSearch_suggestionsListAnimDuration="250" />
 
-    </android.support.constraint.ConstraintLayout>
+                </com.esri.arcgisruntime.mapping.view.MapView>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+                <org.osmdroid.views.MapView
+                    android:id="@+id/map_view2"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                </org.osmdroid.views.MapView>
+
+            </LinearLayout>
+
+        </ViewFlipper>
+
+
+    </LinearLayout>
 
     <!-- SLIDING LAYOUT -->
     <LinearLayout
