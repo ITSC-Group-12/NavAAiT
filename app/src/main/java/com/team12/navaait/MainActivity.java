@@ -17,7 +17,6 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -28,16 +27,12 @@ import android.widget.Toast;
 import android.widget.ViewFlipper;
 
 import com.arlib.floatingsearchview.FloatingSearchView;
-import com.arlib.floatingsearchview.suggestions.model.SearchSuggestion;
 import com.esri.arcgisruntime.concurrent.ListenableFuture;
-import com.esri.arcgisruntime.geometry.GeometryEngine;
 import com.esri.arcgisruntime.geometry.Point;
-import com.esri.arcgisruntime.geometry.SpatialReferences;
 import com.esri.arcgisruntime.loadable.LoadStatus;
 import com.esri.arcgisruntime.mapping.ArcGISMap;
 import com.esri.arcgisruntime.mapping.MobileMapPackage;
 import com.esri.arcgisruntime.mapping.view.Callout;
-import com.esri.arcgisruntime.mapping.view.DefaultMapViewOnTouchListener;
 import com.esri.arcgisruntime.mapping.view.Graphic;
 import com.esri.arcgisruntime.mapping.view.GraphicsOverlay;
 import com.esri.arcgisruntime.mapping.view.LocationDisplay;
@@ -53,6 +48,12 @@ import com.getbase.floatingactionbutton.FloatingActionsMenu;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout.PanelSlideListener;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout.PanelState;
+import com.team12.navaait.listeners.MapViewOnTouchListener;
+import com.team12.navaait.listeners.SearchViewOnFocusChangeListener;
+import com.team12.navaait.listeners.SearchViewOnMenuItemClickListener;
+import com.team12.navaait.listeners.SearchViewOnQueryChangeListener;
+import com.team12.navaait.listeners.SearchViewOnSearchListener;
+import com.team12.navaait.listeners.SlidingLayerOnInteractListener;
 import com.wunderlist.slidinglayer.SlidingLayer;
 import com.wunderlist.slidinglayer.transformer.SlideJoyTransformer;
 
@@ -67,12 +68,12 @@ import java.util.concurrent.ExecutionException;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
     // TAGS
     public static final String loginTAG = "Logged in";
-    private static final String sTag = "Gesture";
     private static final String TAG = "MMPK";
 
     // CONSTANTS
@@ -153,6 +154,30 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         return extStorDir.getAbsolutePath() + File.separator + extSDCardDirName + File.separator + filename + FILE_EXTENSION;
     }
 
+    @OnClick({R.id.action_a, R.id.action_b, R.id.action_c, R.id.action_d})
+    public void fabAction(FloatingActionButton fab) {
+        if (fab.getId() == R.id.action_a) {
+
+            actionA.setTitle("Action A clicked");
+        } else if (fab.getId() == R.id.action_b) {
+
+            viewFlipper.showNext();
+        } else if (fab.getId() == R.id.action_c) {
+
+            if (mLayout != null) {
+                if (mLayout.getPanelState() != PanelState.HIDDEN) {
+                    mLayout.setPanelState(PanelState.HIDDEN);
+                } else {
+                    mLayout.setPanelState(PanelState.COLLAPSED);
+                }
+            }
+        } else if (fab.getId() == R.id.action_d) {
+
+            solveRoute();
+        }
+
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -172,26 +197,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         mTilesOverlay = new TilesOverlay(mProvider, getBaseContext());
         mMapView2.getOverlays().add(mTilesOverlay);
 
-        navigationView.setNavigationItemSelectedListener(this);
-        mSearchView.attachNavigationDrawerToMenuButton(drawer);
-        mSwipeText.setText(getResources().getString(R.string.swipe_down_label));
-
-        mSlidingLayer.setStickTo(SlidingLayer.STICK_TO_BOTTOM);
-        mSlidingLayer.setLayerTransformer(new SlideJoyTransformer());
-        mSlidingLayer.setShadowSizeRes(R.dimen.shadow_size);
-        mSlidingLayer.setShadowDrawable(R.drawable.sidebar_shadow);
-        mSlidingLayer.setOffsetDistance(OFFSET_DISTANCE);
-        mSlidingLayer.setPreviewOffsetDistance(PREVIEW_OFFSET);
-        mSlidingLayer.closeLayer(true);
-
-        mRecyclerView.setHasFixedSize(true);
-        mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        mRecyclerView.setAdapter(new MyAdapter(SETTINGS_ITEMS));
-
-        // has to be 0.6 to avoid FloatingSearchView hanging from top
-        mLayout.setAnchorPoint(0.6f);
-        mLayout.setPanelState(PanelState.ANCHORED);
-        mLayout.setPanelState(PanelState.HIDDEN);
+        setupUI();
 
         // get the MapView's LocationDisplay
         mLocationDisplay = mMapView.getLocationDisplay();
@@ -231,226 +237,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         f1.setText("Show on Map");
         f2.setText("Show Directions");
 
-        actionA.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                actionA.setTitle("Action A clicked");
-            }
-        });
+        mSearchView.setOnQueryChangeListener(new SearchViewOnQueryChangeListener(mSearchView, getApplicationContext()));
+        mSearchView.setOnSearchListener(new SearchViewOnSearchListener(mLocationDisplay, mLastQuery));
+        mSearchView.setOnFocusChangeListener(new SearchViewOnFocusChangeListener(mSearchView, mLastQuery));
+        mSearchView.setOnMenuItemClickListener(new SearchViewOnMenuItemClickListener(mLocationDisplay, getApplicationContext()));
 
-        actionB.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                actionB.setTitle("Action B clicked");
-                viewFlipper.showNext();
-            }
-        });
+        mSlidingLayer.setOnInteractListener(new SlidingLayerOnInteractListener(menuMultipleActions));
 
-        actionC.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (mLayout != null) {
-                    if (mLayout.getPanelState() != PanelState.HIDDEN) {
-                        mLayout.setPanelState(PanelState.HIDDEN);
-                    } else {
-                        mLayout.setPanelState(PanelState.COLLAPSED);
-                    }
-                }
-            }
-        });
-
-        actionD.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                actionD.setTitle("Action D clicked");
-                solveRoute();
-            }
-        });
-
-        mSearchView.setOnQueryChangeListener(new FloatingSearchView.OnQueryChangeListener() {
-
-            @Override
-            public void onSearchTextChanged(String oldQuery, final String newQuery) {
-
-                if (!oldQuery.equals("") && newQuery.equals("")) {
-                    mSearchView.clearSuggestions();
-                } else {
-
-                    //this shows the top left circular progress you can call it where ever you want, but
-                    //it makes sense to do it when loading something in the background.
-                    mSearchView.showProgress();
-
-                    //simulates a query call to a data sourcewith a new query.
-                    DataHelper.findSuggestions(getApplicationContext(), newQuery, 5,
-                            FIND_SUGGESTION_SIMULATED_DELAY, new DataHelper.OnFindSuggestionsListener() {
-
-                                @Override
-                                public void onResults(List<NameSuggestion> results) {
-
-                                    //this will swap the data and render the collapse/expand animations as necessary
-                                    mSearchView.swapSuggestions(results);
-
-                                    //let the users know that the background process has completed
-                                    mSearchView.hideProgress();
-                                }
-                            });
-                }
-
-                Log.d(TAG, "onSearchTextChanged()");
-            }
-        });
-
-        mSearchView.setOnSearchListener(new FloatingSearchView.OnSearchListener() {
-            @Override
-            public void onSuggestionClicked(final SearchSuggestion searchSuggestion) {
-
-                mLocationDisplay.setAutoPanMode(LocationDisplay.AutoPanMode.RECENTER);
-                if (!mLocationDisplay.isStarted())
-                    mLocationDisplay.startAsync();
-
-//                 LocationSuggestion colorSuggestion = (LocationSuggestion) searchSuggestion;
-//                DataHelper.findColors(getActivity(), colorSuggestion.getBody(),
-//                        new DataHelper.OnFindColorsListener() {
-//
-//                            @Override
-//                            public void onResults(List<ColorWrapper> results) {
-//                                mSearchResultsAdapter.swapData(results);
-//                            }
-//
-//                        });
-                Log.d(TAG, "onSuggestionClicked()");
-
-                mLastQuery = searchSuggestion.getBody();
-            }
-
-            @Override
-            public void onSearchAction(String query) {
-                mLastQuery = query;
-
-                mLocationDisplay.setAutoPanMode(LocationDisplay.AutoPanMode.RECENTER);
-                if (!mLocationDisplay.isStarted())
-                    mLocationDisplay.startAsync();
-
-//                DataHelper.findColors(getActivity(), query,
-//                        new DataHelper.OnFindColorsListener() {
-//
-//                            @Override
-//                            public void onResults(List<ColorWrapper> results) {
-//                                mSearchResultsAdapter.swapData(results);
-//                            }
-//
-//                        });
-                Log.d(TAG, "onSearchAction()");
-            }
-        });
-
-        mSearchView.setOnFocusChangeListener(new FloatingSearchView.OnFocusChangeListener() {
-            @Override
-            public void onFocus() {
-
-                //show suggestions when search bar gains focus (typically history suggestions)
-//                mSearchView.swapSuggestions(DataHelper.getHistory(getActivity(), 3));
-
-                Log.d(TAG, "onFocus()");
-            }
-
-            @Override
-            public void onFocusCleared() {
-
-                //set the title of the bar so that when focus is returned a new query begins
-                mSearchView.setSearchBarTitle(mLastQuery);
-
-                //you can also set setSearchText(...) to make keep the query there when not focused and when focus returns
-                //mSearchView.setSearchText(searchSuggestion.getBody());
-
-                Log.d(TAG, "onFocusCleared()");
-            }
-        });
-
-        mSearchView.setOnMenuItemClickListener(new FloatingSearchView.OnMenuItemClickListener() {
-            @Override
-            public void onActionMenuItemSelected(MenuItem item) {
-
-                if (item.getItemId() == R.id.action_voice_rec) {
-
-                    //  TODO add speech recognition
-
-                } else if (item.getItemId() == R.id.action_location) {
-                    mLocationDisplay.setAutoPanMode(LocationDisplay.AutoPanMode.RECENTER);
-                    if (!mLocationDisplay.isStarted())
-                        mLocationDisplay.startAsync();
-                } else {
-                    Toast.makeText(MainActivity.this, "NOT SURE WHICH SEARCH VIEW ACTION BUTTON IS PRESSED.", Toast.LENGTH_LONG).show();
-                }
-            }
-        });
-
-
-        mSearchView.setOnQueryChangeListener(new FloatingSearchView.OnQueryChangeListener() {
-            @Override
-            public void onSearchTextChanged(String oldQuery, String newQuery) {
-                if (!oldQuery.equals("") && newQuery.equals("")) {
-                    mSearchView.clearSuggestions();
-                } else {
-
-                    //this shows the top left circular progress you can call it where ever you want, but
-                    //it makes sense to do it when loading something in the background.
-                    mSearchView.showProgress();
-
-                    //simulates a query call to a data source with a new query.
-                    DataHelper.findSuggestions(MainActivity.this, newQuery, 5,
-                            FIND_SUGGESTION_SIMULATED_DELAY, new DataHelper.OnFindSuggestionsListener() {
-
-                                @Override
-                                public void onResults(List<NameSuggestion> results) {
-
-                                    //this will swap the data and
-                                    //render the collapse/expand animations as necessary
-                                    mSearchView.swapSuggestions(results);
-
-                                    //let the users know that the background
-                                    //process has completed
-                                    mSearchView.hideProgress();
-                                }
-                            });
-                }
-
-                Log.d(TAG, "onSearchTextChanged()");
-            }
-        });
-
-
-        mSlidingLayer.setOnInteractListener(new SlidingLayer.OnInteractListener() {
-            @Override
-            public void onOpen() {
-            }
-
-            @Override
-            public void onShowPreview() {
-            }
-
-            @Override
-            public void onClose() {
-                if (!menuMultipleActions.isShown()) {
-                    menuMultipleActions.setVisibility(View.VISIBLE);
-                }
-            }
-
-            @Override
-            public void onOpened() {
-            }
-
-            @Override
-            public void onPreviewShowed() {
-
-            }
-
-            @Override
-            public void onClosed() {
-
-            }
-        });
-
+        mMapView.setOnTouchListener(new MapViewOnTouchListener(mMapView, getApplicationContext(), mCallout, points));
 
         // For API level 23+ request permission at runtime
         if (ContextCompat.checkSelfPermission(MainActivity.this, reqPermission[0]) == PackageManager.PERMISSION_GRANTED) {
@@ -460,48 +254,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             ActivityCompat.requestPermissions(MainActivity.this, reqPermission, requestCode1);
         }
 
-
-        mMapView.setOnTouchListener(new DefaultMapViewOnTouchListener(this, mMapView) {
-
-
-            @Override
-            public boolean onSingleTapConfirmed(MotionEvent motionEvent) {
-                Log.d(sTag, "onSingleTapConfirmed: " + motionEvent.toString());
-
-                // get the point that was clicked and convert it to a point in map coordinates
-                android.graphics.Point screenPoint = new android.graphics.Point(Math.round(motionEvent.getX()),
-                        Math.round(motionEvent.getY()));
-                // create a map point from screen point
-                Point mapPoint = mMapView.screenToLocation(screenPoint);
-                // convert to WGS84 for lat/lon format
-                Point wgs84Point = (Point) GeometryEngine.project(mapPoint, SpatialReferences.getWgs84());
-
-                for (int i = 0; i < points.length; i++) {
-                    if (points[i] == null) {
-                        points[i] = wgs84Point;
-                        break;
-                    }
-                }
-                // create a textview for the callout
-                TextView calloutContent = new TextView(getApplicationContext());
-                calloutContent.setTextColor(Color.BLACK);
-                calloutContent.setSingleLine();
-                // format coordinates to 4 decimal places
-                calloutContent.setText("Lat: " + String.format("%.4f", wgs84Point.getY()) +
-                        ", Lon: " + String.format("%.4f", wgs84Point.getX()));
-
-                // get callout, set content and show
-                mCallout = mMapView.getCallout();
-                mCallout.setLocation(mapPoint);
-                mCallout.setContent(calloutContent);
-                mCallout.show();
-
-                // center on tapped point
-                mMapView.setViewpointCenterAsync(mapPoint);
-
-                return true;
-            }
-        });
 
         // Listen to changes in the status of the location data source.
         mLocationDisplay.addDataSourceStatusChangedListener(new LocationDisplay.DataSourceStatusChangedListener() {
@@ -580,6 +332,29 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         });
 
 
+    }
+
+    private void setupUI() {
+        navigationView.setNavigationItemSelectedListener(this);
+        mSearchView.attachNavigationDrawerToMenuButton(drawer);
+        mSwipeText.setText(getResources().getString(R.string.swipe_down_label));
+
+        mSlidingLayer.setStickTo(SlidingLayer.STICK_TO_BOTTOM);
+        mSlidingLayer.setLayerTransformer(new SlideJoyTransformer());
+        mSlidingLayer.setShadowSizeRes(R.dimen.shadow_size);
+        mSlidingLayer.setShadowDrawable(R.drawable.sidebar_shadow);
+        mSlidingLayer.setOffsetDistance(OFFSET_DISTANCE);
+        mSlidingLayer.setPreviewOffsetDistance(PREVIEW_OFFSET);
+        mSlidingLayer.closeLayer(true);
+
+        mRecyclerView.setHasFixedSize(true);
+        mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        mRecyclerView.setAdapter(new MyAdapter(SETTINGS_ITEMS));
+
+        // has to be 0.6 to avoid FloatingSearchView hanging from top
+        mLayout.setAnchorPoint(0.6f);
+        mLayout.setPanelState(PanelState.ANCHORED);
+        mLayout.setPanelState(PanelState.HIDDEN);
     }
 
     /**
@@ -667,7 +442,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     @Override
     public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
 
@@ -685,7 +459,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     }
 
-    @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
@@ -699,7 +472,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             }
         }
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
