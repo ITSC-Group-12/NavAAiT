@@ -1,8 +1,13 @@
 package com.team12.navaait;
 
 import android.Manifest;
+import android.app.DownloadManager;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.annotation.NonNull;
@@ -27,6 +32,7 @@ import android.widget.Toast;
 import android.widget.ViewFlipper;
 
 import com.arlib.floatingsearchview.FloatingSearchView;
+import com.esafirm.rxdownloader.RxDownloader;
 import com.esri.arcgisruntime.concurrent.ListenableFuture;
 import com.esri.arcgisruntime.geometry.Point;
 import com.esri.arcgisruntime.loadable.LoadStatus;
@@ -50,6 +56,8 @@ import com.sothree.slidinguppanel.SlidingUpPanelLayout.PanelSlideListener;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout.PanelState;
 import com.team12.navaait.listeners.MapViewOnTouchListener;
 import com.team12.navaait.listeners.SearchViewOnFocusChangeListener;
+import com.team12.navaait.domain.Map;
+import com.team12.navaait.domain.User;
 import com.team12.navaait.listeners.SearchViewOnMenuItemClickListener;
 import com.team12.navaait.listeners.SearchViewOnQueryChangeListener;
 import com.team12.navaait.listeners.SearchViewOnSearchListener;
@@ -58,19 +66,34 @@ import com.wunderlist.slidinglayer.SlidingLayer;
 import com.wunderlist.slidinglayer.transformer.SlideJoyTransformer;
 
 import org.osmdroid.tileprovider.MapTileProviderBasic;
+import java.io.BufferedInputStream;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.views.overlay.TilesOverlay;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.ExecutionException;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+import retrofit.Callback;
+import retrofit.RestAdapter;
+import retrofit.RetrofitError;
+import retrofit.client.Response;
+
+//import android.support.design.widget.Snackbar;
+
+public class MainActivity extends AppCompatActivity
+        implements NavigationView.OnNavigationItemSelectedListener {
 
     // TAGS
     public static final String loginTAG = "Logged in";
@@ -138,6 +161,25 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     private Point[] points = new Point[]{null, null};
 
+
+    //map update
+    private Button mDownloadMap;
+    DownloadManager downloadManager;
+
+    String Fvalue;
+    String Lvalue;
+    String Ivalue;
+
+
+
+    String url = "192.168.43.1:8080/Chapter1_DNI.pptx";
+    String fileToBeSaved = "map file";
+
+    RestAdapter restAdapter = new RestAdapter.Builder().setEndpoint("http://192.168.137.194:8086").build();
+    NavApiClient navApiClient =
+            restAdapter.create(NavApiClient.class);
+
+
     // Search Stuff
     private String mLastQuery = "";
 
@@ -197,7 +239,21 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         mTilesOverlay = new TilesOverlay(mProvider, getBaseContext());
         mMapView2.getOverlays().add(mTilesOverlay);
 
+//        mDownloadMap = (Button) findViewById(R.id.btn_up);
+//        mDownloadMap.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                checkV();
+//            }
+//        });
+
         setupUI();
+        //sharedpreference
+
+        SharedPreferences sharedPreferences = getSharedPreferences("shared preference", MODE_PRIVATE);
+        Fvalue = sharedPreferences.getString("first name","");
+        Lvalue = sharedPreferences.getString("last name","");
+        Ivalue = sharedPreferences.getString("Device id","");
 
         // get the MapView's LocationDisplay
         mLocationDisplay = mMapView.getLocationDisplay();
@@ -331,6 +387,138 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             }
         });
 
+
+    }
+    /**Handle user visibility*/
+    private void checkUserVisibility(){
+
+
+        User user = new User(null, Fvalue, Lvalue, Ivalue);
+        navApiClient.RegisterUser(user, new Callback<User>() {
+            @Override
+            public void success(User user, Response response) {
+                // TOdo the radio button
+                Toast.makeText(MainActivity.this, "do the radio button" , Toast.LENGTH_SHORT).show();
+
+            }
+
+            @Override
+            public void failure(RetrofitError error) {
+                if (error != null) {
+//                    Log.e("TAG", error.getBody().toString());
+                    error.printStackTrace();
+                }
+            }
+
+        });
+
+
+    }
+
+
+
+    /**Handle map update*/
+    private class DownloadFile extends AsyncTask<String, String, String> {
+
+            @Override
+            protected  void onPreExecute(){
+                super.onPreExecute();
+                Toast.makeText(getApplicationContext(), "Download started.", Toast.LENGTH_LONG).show();
+
+            }
+            @Override
+            protected String doInBackground(String... params) {
+                int count;
+                try {
+                    URL url = new URL(params[0]);
+                    URLConnection connection = url.openConnection();
+                    connection.connect();
+                    // Get Music file length
+                    int lenghtOfFile = connection.getContentLength();
+                    // input stream to read file - with 8k buffer
+                    InputStream input = new BufferedInputStream(url.openStream(),10*1024);
+                    // Output stream to write file in SD card
+                    File path = Environment.getExternalStoragePublicDirectory(
+                            Environment.DIRECTORY_DOWNLOADS);
+                    File file = new File(path, fileToBeSaved);
+                    fileToBeSaved = "downloaded-file-" + String.valueOf(new Random(Long.MAX_VALUE).nextLong());
+                    OutputStream output = new FileOutputStream(file);
+                    byte data[] = new byte[1024];
+                    long total = 0;
+                    while ((count = input.read(data)) != -1) {
+                        total += count;
+                        // Publish the progress which triggers onProgressUpdate method
+                        //publishProgress("" + (int) ((total * 100) / lenghtOfFile));
+
+                        // Write data to file
+                        output.write(data, 0, count);
+                    }
+                    // Flush output
+                    output.flush();
+                    // Close streams
+                    output.close();
+                    input.close();
+                } catch (Exception e){
+                    Log.e("Error: ", e.getMessage());
+                }
+                return null;
+            }
+
+
+            @Override
+            protected void onPostExecute(String file_url) {
+                Toast.makeText(getApplicationContext(), "Download complete.", Toast.LENGTH_LONG).show();
+
+            }
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+    private void checkV() {
+
+        try {
+            Callback<Map> callback = new Callback<Map>() {
+
+                @Override
+                public void success(Map map, retrofit.client.Response response) {
+                    Toast.makeText(MainActivity.this, map.getVersion(), Toast.LENGTH_SHORT).show();
+                    String version = map.getVersion().toString();
+                    SharedPreferences sharedPreferences = getSharedPreferences("version",MODE_PRIVATE);
+                    if(version.equals(sharedPreferences.getString("version",""))){
+                        Toast.makeText(MainActivity.this, "YOUR MAP IS UPDATED", Toast.LENGTH_SHORT).show();
+                    }
+                    else{
+                        SharedPreferences.Editor e =sharedPreferences.edit();
+                        e.putString("version",version);
+                        e.apply();
+                        new DownloadFile().execute(url);
+                    }
+
+
+                }
+
+                @Override
+                public void failure(RetrofitError error) {
+                    if (error != null) {
+//                        Log.e("TAG", error.getBody().toString());
+                        error.printStackTrace();
+                    }
+                }
+            };
+
+            navApiClient.checkVersion(callback);
+        } catch (Exception ex) {
+            Log.d("TAG", "Not successful");
+        }
 
     }
 
