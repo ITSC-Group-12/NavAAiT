@@ -26,16 +26,13 @@ public class DataHelper {
     private static List<NameWrapper> sNameWrappers = new ArrayList<>();
 
     private static List<NameSuggestion> sNameSuggestions =  new ArrayList<>(Arrays.asList(
-            new NameSuggestion("library"),
-            new NameSuggestion("lounge"),
-            new NameSuggestion("Green Area"),
-            new NameSuggestion("Parking"),
-            new NameSuggestion("Court"),
-            new NameSuggestion("NB"),
-            new NameSuggestion("Samsung")));
+            new NameSuggestion(new Location(9.0410,38.7630, "library")),
+            new NameSuggestion(new Location(9.0406,38.7631,"Something"))));
+
+
 
     public interface OnFindNamesListener {
-        void onResults(List<NameWrapper> results);
+        void onResults(List<NameSuggestion> results);
     }
 
     public interface OnFindSuggestionsListener {
@@ -116,7 +113,7 @@ public class DataHelper {
 
     }
 
-    public static void findColors(Context context, String query, final OnFindNamesListener listener) {
+    public static void findLocations(Context context, String query, final OnFindNamesListener listener) {
         initNameWrapperList(context);
 
         new Filter() {
@@ -150,7 +147,7 @@ public class DataHelper {
             protected void publishResults(CharSequence constraint, FilterResults results) {
 
                 if (listener != null) {
-                    listener.onResults((List<NameWrapper>) results.values);
+                    listener.onResults((List<NameSuggestion>) results.values);
                 }
             }
         }.filter(query);
@@ -182,6 +179,9 @@ public class DataHelper {
 
         return jsonString;
     }
+
+
+
 
     private static List<NameWrapper> deserializeColors(String jsonString) {
 

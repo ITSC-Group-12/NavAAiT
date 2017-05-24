@@ -22,16 +22,17 @@ import com.arlib.floatingsearchview.suggestions.model.SearchSuggestion;
 
 public class NameSuggestion implements SearchSuggestion {
 
-    private String mLocationName;
+    private Location location = new Location();
     private boolean mIsHistory = false;
 
-    public NameSuggestion(String suggestion) {
-        this.mLocationName = suggestion.toLowerCase();
+    public NameSuggestion(Location location) {
+        this.location.setLatitude(location.getLatitude());
+        this.location.setLongitude(location.getLongitude());
+        this.location.setName(location.getName());
     }
 
     public NameSuggestion(Parcel source) {
-        this.mLocationName = source.readString();
-        this.mIsHistory = source.readInt() != 0;
+        this.mIsHistory = source.readInt() !=0;
     }
 
     public void setIsHistory(boolean isHistory) {
@@ -44,7 +45,11 @@ public class NameSuggestion implements SearchSuggestion {
 
     @Override
     public String getBody() {
-        return mLocationName;
+        return location.getName();
+    }
+
+    public Location getLocation(){
+        return location;
     }
 
     public static final Creator<NameSuggestion> CREATOR = new Creator<NameSuggestion>() {
@@ -66,7 +71,7 @@ public class NameSuggestion implements SearchSuggestion {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(mLocationName);
+        dest.writeString(location.getName());
         dest.writeInt(mIsHistory ? 1 : 0);
     }
 }
