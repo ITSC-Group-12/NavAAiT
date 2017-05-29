@@ -26,10 +26,9 @@ public class SearchViewOnSearchListener implements FloatingSearchView.OnSearchLi
     private Callout mCallout;
     private MapView mMapView;
 
-    public SearchViewOnSearchListener(LocationDisplay mLocationDisplay, String mLastQuery,Callout mCallout,MapView mMapView) {
+    public SearchViewOnSearchListener(LocationDisplay mLocationDisplay, String mLastQuery, MapView mMapView) {
         this.mLocationDisplay = mLocationDisplay;
         this.mLastQuery = mLastQuery;
-        this.mCallout = mCallout;
         this.mMapView = mMapView;
     }
 
@@ -39,7 +38,7 @@ public class SearchViewOnSearchListener implements FloatingSearchView.OnSearchLi
 
         NameSuggestion nameSuggestion = (NameSuggestion) searchSuggestion;
 
-        Point mapPoint = new Point(nameSuggestion.getLocation().getLatitude(),nameSuggestion.getLocation().getLongitude(), SpatialReferences.getWgs84());
+        Point mapPoint = new Point(nameSuggestion.getLocation().getLatitude(), nameSuggestion.getLocation().getLongitude(), SpatialReferences.getWgs84());
         // convert to WGS84 for lat/lon format
         Point wgs84Point = (Point) GeometryEngine.project(mapPoint, SpatialReferences.getWgs84());
 

@@ -22,15 +22,14 @@ public class MapViewOnTouchListener extends DefaultMapViewOnTouchListener {
     private MapView mMapView;
     private Context context;
     private Callout mCallout;
-    private Point[] points;
+    private Point endingPoint;
     private static final String sTag = "Gesture";
 
-    public MapViewOnTouchListener(MapView mMapView, Context context, Callout mCallout, Point[] points) {
+    public MapViewOnTouchListener(MapView mMapView, Context context, Point endingPoint) {
         super(context, mMapView);
         this.mMapView = mMapView;
         this.context = context;
-        this.mCallout = mCallout;
-        this.points = points;
+        this.endingPoint = endingPoint;
     }
 
     @Override
@@ -45,12 +44,11 @@ public class MapViewOnTouchListener extends DefaultMapViewOnTouchListener {
         // convert to WGS84 for lat/lon format
         Point wgs84Point = (Point) GeometryEngine.project(mapPoint, SpatialReferences.getWgs84());
 
-        for (int i = 0; i < points.length; i++) {
-            if (points[i] == null) {
-                points[i] = wgs84Point;
-                break;
-            }
+
+        if (endingPoint == null) {
+            endingPoint = wgs84Point;
         }
+
         // create a textview for the callout
         TextView calloutContent = new TextView(context);
         calloutContent.setTextColor(Color.BLACK);

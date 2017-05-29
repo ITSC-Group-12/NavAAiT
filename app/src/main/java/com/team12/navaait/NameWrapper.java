@@ -53,54 +53,42 @@ public class NameWrapper implements Parcelable {
     }
 
     /**
-     *
-     * @return
-     * The name
+     * @return The name
      */
     public String getName() {
         return name;
     }
 
     /**
-     *
-     * @param hex
-     * The name
+     * @param hex The name
      */
     public void setName(String hex) {
         this.name = name;
     }
 
     /**
-     *
-     * @return
-     * The latitude
+     * @return The latitude
      */
     public String getLatitude() {
         return latitude;
     }
 
     /**
-     *
-     * @param latitude
-     * The latitude
+     * @param latitude The latitude
      */
     public void setLatitude(String latitude) {
         this.latitude = latitude;
     }
 
     /**
-     *
-     * @return
-     * The longitude
+     * @return The longitude
      */
     public String getLongitude() {
         return longitude;
     }
 
     /**
-     *
-     * @param longitude
-     * The rgb
+     * @param longitude The rgb
      */
     public void setLongitude(String longitude) {
         this.longitude = longitude;

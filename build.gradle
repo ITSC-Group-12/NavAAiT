@@ -16,6 +16,8 @@ allprojects {
     repositories {
         jcenter()
         maven{ url 'https://esri.bintray.com/arcgis' }
+        maven { url "http://indooratlas-ltd.bintray.com/mvn-public" }
+        maven { url "http://indooratlas-ltd.bintray.com/mvn-public-alpha" }
         maven{ url "https://jitpack.io" }
     }
 }

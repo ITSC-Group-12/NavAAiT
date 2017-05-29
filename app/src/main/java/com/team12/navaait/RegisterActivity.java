@@ -3,20 +3,21 @@ package com.team12.navaait;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.team12.navaait.domain.User;
+import com.team12.navaait.rest.NavRestClient;
+import com.team12.navaait.rest.service.ApiService;
+import com.team12.navaait.util.DeviceInfo;
+import com.team12.navaait.util.SharedPref;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import com.team12.navaait.domain.User;
-
 import butterknife.OnClick;
 import retrofit.Callback;
-import retrofit.RestAdapter;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
 
@@ -28,10 +29,10 @@ public class RegisterActivity extends AppCompatActivity {
     EditText lastname;
     @BindView(R.id.btn_register)
     Button mRegisterButton;
+
     String id;
 
-    RestAdapter restAdapter = new RestAdapter.Builder().setEndpoint("http://192.168.137.194:8086").build();
-    NavApiClient navApiClient = restAdapter.create(NavApiClient.class);
+    ApiService apiService = new NavRestClient().getApiService();
 
     @OnClick(R.id.btn_register)
     public void register() {
@@ -44,24 +45,24 @@ public class RegisterActivity extends AppCompatActivity {
 
         }
     }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
         ButterKnife.bind(this);
+        SharedPref.clearPrefs(getApplicationContext());
+        String Fvalue = SharedPref.getStringPref(getApplicationContext(), SharedPref.USER_FIRST_NAME);
+        String Lvalue = SharedPref.getStringPref(getApplicationContext(), SharedPref.USER_LAST_NAME);
+        String Ivalue = SharedPref.getStringPref(getApplicationContext(), SharedPref.USER_DEVICE_ID);
 
-        SharedPreferences sharedPreferences = getSharedPreferences("shared preference", MODE_PRIVATE);
-        String Fvalue = sharedPreferences.getString("first name","");
-        String Lvalue = sharedPreferences.getString("last name","");
-        String Ivalue = sharedPreferences.getString("Device id","");
+        checkAuth(Fvalue, Lvalue, Ivalue);
 
-        checkAuth(Fvalue,Lvalue,Ivalue);
-
-        if(!Fvalue.isEmpty() && !Lvalue.isEmpty() && !Ivalue.isEmpty()){
+        if (!Fvalue.isEmpty() && !Lvalue.isEmpty() && !Ivalue.isEmpty()) {
             startHomeActivity();
         }
 
-        id = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+        id = DeviceInfo.getDeviceID();
 
 
     }
@@ -70,15 +71,15 @@ public class RegisterActivity extends AppCompatActivity {
     private void createAccount() {
 
         User user = new User(null, firstname.getText().toString(), lastname.getText().toString(), id, true, null);
-        navApiClient.RegisterUser(user, new Callback<User>() {
+        apiService.registerUser(user, new Callback<User>() {
             @Override
             public void success(User user, Response response) {
                 Toast.makeText(RegisterActivity.this, "Welcome " + user.getFirstName(), Toast.LENGTH_SHORT).show();
-                SharedPreferences sharedPreferences = getSharedPreferences("shared preference", MODE_PRIVATE);
+                SharedPreferences sharedPreferences = getSharedPreferences(SharedPref.FILE, MODE_PRIVATE);
                 SharedPreferences.Editor e = sharedPreferences.edit();
-                e.putString("first name", firstname.getText().toString());
-                e.putString("last name",lastname.getText().toString());
-                e.putString("Device id", id);
+                e.putString(SharedPref.USER_FIRST_NAME, firstname.getText().toString());
+                e.putString(SharedPref.USER_LAST_NAME, lastname.getText().toString());
+                e.putString(SharedPref.USER_DEVICE_ID, id);
                 e.apply();
                 startHomeActivity();
 
@@ -87,8 +88,9 @@ public class RegisterActivity extends AppCompatActivity {
             @Override
             public void failure(RetrofitError error) {
                 if (error != null) {
-                    Log.e("TAG", error.getBody().toString());
-                    Toast.makeText(RegisterActivity.this, "Connection Error, Please try again " , Toast.LENGTH_LONG).show();
+                    startHomeActivity();
+//                    Log.e("TAG", error.getBody().toString());
+                    Toast.makeText(RegisterActivity.this, "Connection Error, Please try again ", Toast.LENGTH_LONG).show();
                     error.printStackTrace();
                 }
             }
@@ -96,9 +98,10 @@ public class RegisterActivity extends AppCompatActivity {
         });
 
     }
-    private void checkAuth(String firstname, String lastname, String deviceId){
-        User user = new User(null, firstname , lastname, deviceId, true, null);
-        navApiClient.checkUser(user, new Callback<User>() {
+
+    private void checkAuth(String firstname, String lastname, String deviceId) {
+        User user = new User(null, firstname, lastname, deviceId, true, null);
+        apiService.auth(user, new Callback<User>() {
             @Override
             public void success(User user, Response response) {
                 Toast.makeText(RegisterActivity.this, "User is Registered", Toast.LENGTH_SHORT).show();
@@ -116,7 +119,6 @@ public class RegisterActivity extends AppCompatActivity {
         });
 
     }
-
 
 
     private void startHomeActivity() {

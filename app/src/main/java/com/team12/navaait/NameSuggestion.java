@@ -32,7 +32,7 @@ public class NameSuggestion implements SearchSuggestion {
     }
 
     public NameSuggestion(Parcel source) {
-        this.mIsHistory = source.readInt() !=0;
+        this.mIsHistory = source.readInt() != 0;
     }
 
     public void setIsHistory(boolean isHistory) {
@@ -48,7 +48,7 @@ public class NameSuggestion implements SearchSuggestion {
         return location.getName();
     }
 
-    public Location getLocation(){
+    public Location getLocation() {
         return location;
     }
 

@@ -1,120 +1,98 @@
 package com.team12.navaait;
 
 import android.Manifest;
-import android.app.DownloadManager;
-import android.content.Context;
-import android.content.SharedPreferences;
+import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
-import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Environment;
+import android.speech.RecognizerIntent;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.CardView;
 import android.util.Log;
-import android.view.MenuItem;
-import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.ListView;
+import android.widget.ProgressBar;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ViewFlipper;
 
 import com.arlib.floatingsearchview.FloatingSearchView;
-import com.esafirm.rxdownloader.RxDownloader;
-import com.esri.arcgisruntime.concurrent.ListenableFuture;
 import com.esri.arcgisruntime.geometry.Point;
-import com.esri.arcgisruntime.loadable.LoadStatus;
-import com.esri.arcgisruntime.mapping.ArcGISMap;
-import com.esri.arcgisruntime.mapping.MobileMapPackage;
-import com.esri.arcgisruntime.mapping.view.Callout;
-import com.esri.arcgisruntime.mapping.view.Graphic;
-import com.esri.arcgisruntime.mapping.view.GraphicsOverlay;
 import com.esri.arcgisruntime.mapping.view.LocationDisplay;
 import com.esri.arcgisruntime.mapping.view.MapView;
-import com.esri.arcgisruntime.symbology.SimpleLineSymbol;
-import com.esri.arcgisruntime.tasks.networkanalysis.Route;
-import com.esri.arcgisruntime.tasks.networkanalysis.RouteParameters;
-import com.esri.arcgisruntime.tasks.networkanalysis.RouteResult;
-import com.esri.arcgisruntime.tasks.networkanalysis.RouteTask;
-import com.esri.arcgisruntime.tasks.networkanalysis.Stop;
 import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.getbase.floatingactionbutton.FloatingActionsMenu;
+import com.indooratlas.android.sdk.IALocationListener;
+import com.indooratlas.android.sdk.IALocationManager;
+import com.indooratlas.android.sdk.IALocationRequest;
+import com.indooratlas.android.sdk.IARegion;
+import com.indooratlas.android.sdk.resources.IAResourceManager;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
-import com.sothree.slidinguppanel.SlidingUpPanelLayout.PanelSlideListener;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout.PanelState;
-import com.team12.navaait.listeners.MapViewOnTouchListener;
-import com.team12.navaait.listeners.SearchViewOnFocusChangeListener;
-import com.team12.navaait.domain.Map;
+import com.team12.navaait.domain.Location;
 import com.team12.navaait.domain.User;
+import com.team12.navaait.listeners.MapViewOnTouchListener;
+import com.team12.navaait.listeners.NavViewNavigationItemSelectedListener;
+import com.team12.navaait.listeners.SearchViewOnFocusChangeListener;
 import com.team12.navaait.listeners.SearchViewOnMenuItemClickListener;
 import com.team12.navaait.listeners.SearchViewOnQueryChangeListener;
 import com.team12.navaait.listeners.SearchViewOnSearchListener;
+import com.team12.navaait.listeners.SlideUpPanelListener;
 import com.team12.navaait.listeners.SlidingLayerOnInteractListener;
+import com.team12.navaait.rest.NavRestClient;
+import com.team12.navaait.rest.service.ApiService;
+import com.team12.navaait.services.MapService;
+import com.team12.navaait.services.UserService;
+import com.team12.navaait.util.Indoor;
+import com.team12.navaait.util.Outdoor;
+import com.team12.navaait.util.SharedPref;
 import com.wunderlist.slidinglayer.SlidingLayer;
 import com.wunderlist.slidinglayer.transformer.SlideJoyTransformer;
 
 import org.osmdroid.tileprovider.MapTileProviderBasic;
-import java.io.BufferedInputStream;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.views.overlay.TilesOverlay;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.URL;
-import java.net.URLConnection;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Random;
-import java.util.concurrent.ExecutionException;
+import java.util.ArrayList;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-
 import retrofit.Callback;
-import retrofit.RestAdapter;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
 
-//import android.support.design.widget.Snackbar;
-
-public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
-
-    // TAGS
-    public static final String loginTAG = "Logged in";
-    private static final String TAG = "MMPK";
+public class MainActivity extends AppCompatActivity {
 
     // CONSTANTS
     private static final int OFFSET_DISTANCE = 0;
     private static final int PREVIEW_OFFSET = -1;
-    public static final long FIND_SUGGESTION_SIMULATED_DELAY = 250;
-    private static final String FILE_EXTENSION = ".mmpk";
-    private static final String[] SETTINGS_ITEMS = new String[]{"Visibility", "Map Update"};
+    private static final int REQUEST_CODE = 1234;
 
     // VIEWS
+    @BindView(R.id.update_card_view)
+    CardView updateCardView;
+    @BindView(R.id.update_text)
+    TextView updateText;
+    @BindView(R.id.downloadProgressBar)
+    ProgressBar downloadProgressBar;
+    @BindView(R.id.visibility_card_view)
+    CardView visibilityCardView;
+    @BindView(R.id.visibility_text)
+    TextView visibilityText;
+    @BindView(R.id.visibility_switch)
+    Switch visibilitySwitch;
     @BindView(R.id.map_view)
     MapView mMapView;
     @BindView(R.id.map_view2)
     org.osmdroid.views.MapView mMapView2;
     @BindView(R.id.view_flipper)
     ViewFlipper viewFlipper;
-    @BindView(R.id.my_recycler_view)
-    RecyclerView mRecyclerView;
     @BindView(R.id.nav_view)
     NavigationView navigationView;
     @BindView(R.id.floating_search_view)
@@ -122,7 +100,7 @@ public class MainActivity extends AppCompatActivity
     @BindView(R.id.slidingLayer1)
     SlidingLayer mSlidingLayer;
     @BindView(R.id.sliding_layout)
-    SlidingUpPanelLayout mLayout;
+    SlidingUpPanelLayout mSlideUpPanel;
     @BindView(R.id.drawer_layout)
     DrawerLayout drawer;
     @BindView(R.id.swipe_down)
@@ -133,8 +111,6 @@ public class MainActivity extends AppCompatActivity
     Button f1;
     @BindView(R.id.show_directions)
     Button f2;
-    @BindView(R.id.list)
-    ListView lv;
     @BindView(R.id.multiple_actions)
     FloatingActionsMenu menuMultipleActions;
     @BindView(R.id.action_a)
@@ -147,38 +123,24 @@ public class MainActivity extends AppCompatActivity
     FloatingActionButton actionD;
 
     //Map Stuff
-    private static File extStorDir;
-    private static String extSDCardDirName;
-    private static String filename;
-    private static String mmpkFilePath;
-    private MobileMapPackage mapPackage;
-    private Callout mCallout;
     private LocationDisplay mLocationDisplay;
-    private GraphicsOverlay graphicsOverlay = new GraphicsOverlay();
-    private final SimpleLineSymbol mSolvedRouteSymbol = new SimpleLineSymbol(SimpleLineSymbol.Style.SOLID, Color.GREEN, 4.0f);
-    private RouteTask mRouteTask = null;
-    private Graphic mRouteGraphic;
 
-    private Point[] points = new Point[]{null, null};
+    private Point startingPoint = null;
+    private Point endingPoint = null;
 
+    private IALocationManager mIALocationManager;
+    private IAResourceManager mResourceManager;
 
-    //map update
-    private Button mDownloadMap;
-    DownloadManager downloadManager;
+    private MainActivity activity = this;
 
     String Fvalue;
     String Lvalue;
     String Ivalue;
 
+    ApiService apiService = new NavRestClient().getApiService();
 
-
-    String url = "192.168.43.1:8080/Chapter1_DNI.pptx";
-    String fileToBeSaved = "map file";
-
-    RestAdapter restAdapter = new RestAdapter.Builder().setEndpoint("http://192.168.137.194:8086").build();
-    NavApiClient navApiClient =
-            restAdapter.create(NavApiClient.class);
-
+    Indoor indoor;
+    Outdoor outdoor;
 
     // Search Stuff
     private String mLastQuery = "";
@@ -191,34 +153,8 @@ public class MainActivity extends AppCompatActivity
 
     private static final int requestCode1 = 2;
     private static final int requestCode2 = 3;
-
-    private static String createMobileMapPackageFilePath() {
-        return extStorDir.getAbsolutePath() + File.separator + extSDCardDirName + File.separator + filename + FILE_EXTENSION;
-    }
-
-    @OnClick({R.id.action_a, R.id.action_b, R.id.action_c, R.id.action_d})
-    public void fabAction(FloatingActionButton fab) {
-        if (fab.getId() == R.id.action_a) {
-
-            actionA.setTitle("Action A clicked");
-        } else if (fab.getId() == R.id.action_b) {
-
-            viewFlipper.showNext();
-        } else if (fab.getId() == R.id.action_c) {
-
-            if (mLayout != null) {
-                if (mLayout.getPanelState() != PanelState.HIDDEN) {
-                    mLayout.setPanelState(PanelState.HIDDEN);
-                } else {
-                    mLayout.setPanelState(PanelState.COLLAPSED);
-                }
-            }
-        } else if (fab.getId() == R.id.action_d) {
-
-            solveRoute();
-        }
-
-    }
+    private IALocationListener mListener;
+    private IARegion.Listener mRegionListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -226,89 +162,73 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
 
-        mMapView2.setTilesScaledToDpi(true);
-        mMapView2.setBuiltInZoomControls(true);
-        mMapView2.getController().setZoom(18);
+        Bundle extras = new Bundle(2);
+        extras.putString(IALocationManager.EXTRA_API_KEY, getString(R.string.indooratlas_api_key));
+        extras.putString(IALocationManager.EXTRA_API_SECRET, getString(R.string.indooratlas_api_secret));
 
-        TilesOverlay mTilesOverlay;
-        MapTileProviderBasic mProvider;
+        // instantiate IALocationManager and IAResourceManager
+        mIALocationManager = IALocationManager.create(this, extras);
+        mResourceManager = IAResourceManager.create(this);
 
-        mProvider = new MapTileProviderBasic(getApplicationContext());
-        mProvider.setTileSource(TileSourceFactory.DEFAULT_TILE_SOURCE);
-
-        mTilesOverlay = new TilesOverlay(mProvider, getBaseContext());
-        mMapView2.getOverlays().add(mTilesOverlay);
-
-//        mDownloadMap = (Button) findViewById(R.id.btn_up);
-//        mDownloadMap.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                checkV();
-//            }
-//        });
 
         setupUI();
-        //sharedpreference
-
-        SharedPreferences sharedPreferences = getSharedPreferences("shared preference", MODE_PRIVATE);
-        Fvalue = sharedPreferences.getString("first name","");
-        Lvalue = sharedPreferences.getString("last name","");
-        Ivalue = sharedPreferences.getString("Device id","");
 
         // get the MapView's LocationDisplay
         mLocationDisplay = mMapView.getLocationDisplay();
-
-        // get sdcard resource name
-        extStorDir = Environment.getExternalStorageDirectory();
-        // get the directory
-        extSDCardDirName = this.getResources().getString(R.string.config_data_sdcard_offline_dir);
-        // get mobile map package filename
-        filename = this.getResources().getString(R.string.config_mmpk_name);
-        // create the full path to the mobile map package file
-        mmpkFilePath = createMobileMapPackageFilePath();
-
         // start showing location
         if (!mLocationDisplay.isStarted()) {
             mLocationDisplay.setAutoPanMode(LocationDisplay.AutoPanMode.COMPASS_NAVIGATION);
+            // try to set the starting point to the user's location
             mLocationDisplay.startAsync();
+            startingPoint = mLocationDisplay.getLocation().getPosition();
         }
 
-        List<String> your_array_list = Arrays.asList(
-                "This",
-                "Is",
-                "An",
-                "Example",
-                "ListView"
-        );
-        // This is the array adapter, it takes the context of the activity as a
-        // first parameter, the type of list view as a second parameter and your array as a third parameter.
-        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(
-                this,
-                android.R.layout.simple_list_item_1,
-                your_array_list);
+        outdoor = new Outdoor(mMapView, getApplicationContext());
 
-        lv.setAdapter(arrayAdapter);
+        indoor = new Indoor(mMapView2, getApplicationContext(), mResourceManager);
+        mListener = indoor.getmListener();
+        mRegionListener = indoor.getmRegionListener();
+
+        // start receiving location updates & monitor region changes
+        mIALocationManager.requestLocationUpdates(IALocationRequest.create(), mListener);
+        mIALocationManager.registerRegionListener(mRegionListener);
+
+        Fvalue = SharedPref.getStringPref(getApplicationContext(), SharedPref.USER_FIRST_NAME);
+        Lvalue = SharedPref.getStringPref(getApplicationContext(), SharedPref.USER_LAST_NAME);
+        Ivalue = SharedPref.getStringPref(getApplicationContext(), SharedPref.USER_DEVICE_ID);
 
         t.setText("The Library");
         f1.setText("Show on Map");
         f2.setText("Show Directions");
 
         mSearchView.setOnQueryChangeListener(new SearchViewOnQueryChangeListener(mSearchView, getApplicationContext()));
-        mSearchView.setOnSearchListener(new SearchViewOnSearchListener(mLocationDisplay, mLastQuery,mCallout,mMapView));
+        mSearchView.setOnSearchListener(new SearchViewOnSearchListener(mLocationDisplay, mLastQuery, mMapView));
         mSearchView.setOnFocusChangeListener(new SearchViewOnFocusChangeListener(mSearchView, mLastQuery));
-        mSearchView.setOnMenuItemClickListener(new SearchViewOnMenuItemClickListener(mLocationDisplay, getApplicationContext()));
-
+        mSearchView.setOnMenuItemClickListener(new SearchViewOnMenuItemClickListener(mLocationDisplay, getApplicationContext(), activity));
         mSlidingLayer.setOnInteractListener(new SlidingLayerOnInteractListener(menuMultipleActions));
-
-        mMapView.setOnTouchListener(new MapViewOnTouchListener(mMapView, getApplicationContext(), mCallout, points));
+        mMapView.setOnTouchListener(new MapViewOnTouchListener(mMapView, getApplicationContext(), endingPoint));
+        navigationView.setNavigationItemSelectedListener(new NavViewNavigationItemSelectedListener(mSlidingLayer, menuMultipleActions, drawer));
+        mSlideUpPanel.addPanelSlideListener(new SlideUpPanelListener());
+        mSlideUpPanel.setFadeOnClickListener(new SlideUpPanelListener(mSlideUpPanel));
 
         // For API level 23+ request permission at runtime
         if (ContextCompat.checkSelfPermission(MainActivity.this, reqPermission[0]) == PackageManager.PERMISSION_GRANTED) {
-            loadMobileMapPackage(mmpkFilePath);
+            outdoor.loadMobileMapPackage();
         } else {
             // request permission
             ActivityCompat.requestPermissions(MainActivity.this, reqPermission, requestCode1);
         }
+
+        mLocationDisplay.addLocationChangedListener(new LocationDisplay.LocationChangedListener() {
+            @Override
+            public void onLocationChanged(LocationDisplay.LocationChangedEvent locationChangedEvent) {
+                if (mLocationDisplay.getLocation().getPosition() != null) {
+
+                    Point currentLocation = mLocationDisplay.getLocation().getPosition();
+                    UserService.setLocation(getApplicationContext(), new Location("", currentLocation.getX(), currentLocation.getY()));
+                }
+            }
+        });
 
 
         // Listen to changes in the status of the location data source.
@@ -345,60 +265,69 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
+    }
 
-        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Toast.makeText(MainActivity.this, "onItemClick", Toast.LENGTH_SHORT).show();
+    @OnClick(R.id.update_card_view)
+    public void download() {
+
+        MapService.checkVersion(getApplicationContext(), downloadProgressBar);
+    }
+
+    @OnClick({R.id.action_a, R.id.action_b, R.id.action_c, R.id.action_d})
+    public void fabAction(FloatingActionButton fab) {
+        if (fab.getId() == R.id.action_a) {
+
+            actionA.setTitle("Action A clicked");
+        } else if (fab.getId() == R.id.action_b) {
+
+            viewFlipper.showNext();
+        } else if (fab.getId() == R.id.action_c) {
+
+            if (mSlideUpPanel != null) {
+                if (mSlideUpPanel.getPanelState() != PanelState.HIDDEN) {
+                    mSlideUpPanel.setPanelState(PanelState.HIDDEN);
+                } else {
+                    mSlideUpPanel.setPanelState(PanelState.COLLAPSED);
+                }
             }
-        });
+        } else if (fab.getId() == R.id.action_d) {
+            if (startingPoint != null) {
+                if (endingPoint != null) {
 
+                    outdoor.solveRoute(startingPoint, endingPoint);
+                } else {
 
-        mLayout.addPanelSlideListener(new PanelSlideListener() {
-            @Override
-            public void onPanelSlide(View panel, float slideOffset) {
-                Log.i(TAG, "onPanelSlide, offset " + slideOffset);
+                    Toast.makeText(MainActivity.this, "Ending Point Not Set", Toast.LENGTH_SHORT).show();
+                }
+            } else {
+
+                Toast.makeText(MainActivity.this, "Starting Point Not Set", Toast.LENGTH_SHORT).show();
             }
-
-            @Override
-            public void onPanelStateChanged(View panel, PanelState previousState, PanelState newState) {
-
-            }
-
-        });
-        mLayout.setFadeOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                mLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
-            }
-        });
-
-
-        f1.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-            }
-        });
-        f2.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-            }
-        });
-
+        }
 
     }
-    /**Handle user visibility*/
-    private void checkUserVisibility(){
+
+    @OnClick({R.id.show_location, R.id.show_directions})
+    public void action(Button button) {
+        if (button.getId() == R.id.show_location) {
+
+        } else if (button.getId() == R.id.show_directions) {
+
+        }
+    }
+
+    /**
+     * Handle user visibility
+     */
+    private void checkUserVisibility() {
 
 
         User user = new User(null, Fvalue, Lvalue, Ivalue);
-        navApiClient.RegisterUser(user, new Callback<User>() {
+        apiService.registerUser(user, new Callback<User>() {
             @Override
             public void success(User user, Response response) {
                 // TOdo the radio button
-                Toast.makeText(MainActivity.this, "do the radio button" , Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, "do the radio button", Toast.LENGTH_SHORT).show();
 
             }
 
@@ -416,114 +345,22 @@ public class MainActivity extends AppCompatActivity
     }
 
 
-
-    /**Handle map update*/
-    private class DownloadFile extends AsyncTask<String, String, String> {
-
-            @Override
-            protected  void onPreExecute(){
-                super.onPreExecute();
-                Toast.makeText(getApplicationContext(), "Download started.", Toast.LENGTH_LONG).show();
-
-            }
-            @Override
-            protected String doInBackground(String... params) {
-                int count;
-                try {
-                    URL url = new URL(params[0]);
-                    URLConnection connection = url.openConnection();
-                    connection.connect();
-                    // Get Music file length
-                    int lenghtOfFile = connection.getContentLength();
-                    // input stream to read file - with 8k buffer
-                    InputStream input = new BufferedInputStream(url.openStream(),10*1024);
-                    // Output stream to write file in SD card
-                    File path = Environment.getExternalStoragePublicDirectory(
-                            Environment.DIRECTORY_DOWNLOADS);
-                    File file = new File(path, fileToBeSaved);
-                    fileToBeSaved = "downloaded-file-" + String.valueOf(new Random(Long.MAX_VALUE).nextLong());
-                    OutputStream output = new FileOutputStream(file);
-                    byte data[] = new byte[1024];
-                    long total = 0;
-                    while ((count = input.read(data)) != -1) {
-                        total += count;
-                        // Publish the progress which triggers onProgressUpdate method
-                        //publishProgress("" + (int) ((total * 100) / lenghtOfFile));
-
-                        // Write data to file
-                        output.write(data, 0, count);
-                    }
-                    // Flush output
-                    output.flush();
-                    // Close streams
-                    output.close();
-                    input.close();
-                } catch (Exception e){
-                    Log.e("Error: ", e.getMessage());
-                }
-                return null;
-            }
-
-
-            @Override
-            protected void onPostExecute(String file_url) {
-                Toast.makeText(getApplicationContext(), "Download complete.", Toast.LENGTH_LONG).show();
-
-            }
-        }
-
-
-
-
-
-
-
-
-
-
-
-
-    private void checkV() {
-
-        try {
-            Callback<Map> callback = new Callback<Map>() {
-
-                @Override
-                public void success(Map map, retrofit.client.Response response) {
-                    Toast.makeText(MainActivity.this, map.getVersion(), Toast.LENGTH_SHORT).show();
-                    String version = map.getVersion().toString();
-                    SharedPreferences sharedPreferences = getSharedPreferences("version",MODE_PRIVATE);
-                    if(version.equals(sharedPreferences.getString("version",""))){
-                        Toast.makeText(MainActivity.this, "YOUR MAP IS UPDATED", Toast.LENGTH_SHORT).show();
-                    }
-                    else{
-                        SharedPreferences.Editor e =sharedPreferences.edit();
-                        e.putString("version",version);
-                        e.apply();
-                        new DownloadFile().execute(url);
-                    }
-
-
-                }
-
-                @Override
-                public void failure(RetrofitError error) {
-                    if (error != null) {
-//                        Log.e("TAG", error.getBody().toString());
-                        error.printStackTrace();
-                    }
-                }
-            };
-
-            navApiClient.checkVersion(callback);
-        } catch (Exception ex) {
-            Log.d("TAG", "Not successful");
-        }
-
-    }
-
     private void setupUI() {
-        navigationView.setNavigationItemSelectedListener(this);
+
+
+        mMapView2.setTilesScaledToDpi(true);
+        mMapView2.setBuiltInZoomControls(true);
+        mMapView2.getController().setZoom(18);
+
+        TilesOverlay mTilesOverlay;
+        MapTileProviderBasic mProvider;
+
+        mProvider = new MapTileProviderBasic(getApplicationContext());
+        mProvider.setTileSource(TileSourceFactory.DEFAULT_TILE_SOURCE);
+
+        mTilesOverlay = new TilesOverlay(mProvider, getBaseContext());
+        mMapView2.getOverlays().add(mTilesOverlay);
+
         mSearchView.attachNavigationDrawerToMenuButton(drawer);
         mSwipeText.setText(getResources().getString(R.string.swipe_down_label));
 
@@ -534,15 +371,12 @@ public class MainActivity extends AppCompatActivity
         mSlidingLayer.setOffsetDistance(OFFSET_DISTANCE);
         mSlidingLayer.setPreviewOffsetDistance(PREVIEW_OFFSET);
         mSlidingLayer.closeLayer(true);
-
-        mRecyclerView.setHasFixedSize(true);
-        mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        mRecyclerView.setAdapter(new MyAdapter(SETTINGS_ITEMS));
+        mSlidingLayer.setChangeStateOnTap(false);
 
         // has to be 0.6 to avoid FloatingSearchView hanging from top
-        mLayout.setAnchorPoint(0.6f);
-        mLayout.setPanelState(PanelState.ANCHORED);
-        mLayout.setPanelState(PanelState.HIDDEN);
+        mSlideUpPanel.setAnchorPoint(0.6f);
+        mSlideUpPanel.setPanelState(PanelState.ANCHORED);
+        mSlideUpPanel.setPanelState(PanelState.HIDDEN);
     }
 
     /**
@@ -555,7 +389,7 @@ public class MainActivity extends AppCompatActivity
             case requestCode1: {
 
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    loadMobileMapPackage(mmpkFilePath);
+                    outdoor.loadMobileMapPackage();
                 } else {
                     // report to user that permission was denied
                     Toast.makeText(MainActivity.this, getResources().getString(R.string.location_permission_denied),
@@ -584,61 +418,16 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    /**
-     * Load a mobile map package into a MapView
-     *
-     * @param mmpkFile Full path to mmpk file
-     */
-    private void loadMobileMapPackage(String mmpkFile) {
-        // create the mobile map package
-        mapPackage = new MobileMapPackage(mmpkFile);
-        // load the mobile map package asynchronously
-        mapPackage.loadAsync();
-
-        // add done listener which will invoke when mobile map package has loaded
-        mapPackage.addDoneLoadingListener(new Runnable() {
-            @Override
-            public void run() {
-                // check load status and that the mobile map package has maps
-                if (mapPackage.getLoadStatus() == LoadStatus.LOADED && mapPackage.getMaps().size() > 0) {
-                    // add the map from the mobile map package to the MapView
-                    mMapView.setMap(mapPackage.getMaps().get(0));
-                    mapPackage.getMaps().get(0).addDoneLoadingListener(new Runnable() {
-                        @Override
-                        public void run() {
-
-                            if (mapPackage.getLoadStatus() != LoadStatus.LOADED) {
-                                Snackbar.make(mMapView, String.format(getString(R.string.object_not_loaded), "Map"),
-                                        Snackbar.LENGTH_SHORT).show();
-                                return;
-                            }
-
-                            setupOfflineNetwork(mapPackage.getMaps().get(0));
-                            mapPackage.getMaps().get(0).removeDoneLoadingListener(this);
-                            mMapView.getGraphicsOverlays().add(graphicsOverlay);
-                        }
-                    });
-
-
-                } else {
-                    // Log an issue if the mobile map package fails to load
-                    Log.e(TAG, mapPackage.getLoadError().getMessage());
-                }
-            }
-        });
-    }
-
     @Override
     public void onBackPressed() {
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
 
-
         } else {
 
-            if (mLayout != null &&
-                    (mLayout.getPanelState() == PanelState.EXPANDED || mLayout.getPanelState() == PanelState.ANCHORED)) {
-                mLayout.setPanelState(PanelState.COLLAPSED);
+            if (mSlideUpPanel != null &&
+                    (mSlideUpPanel.getPanelState() == PanelState.EXPANDED || mSlideUpPanel.getPanelState() == PanelState.ANCHORED)) {
+                mSlideUpPanel.setPanelState(PanelState.COLLAPSED);
             } else {
                 super.onBackPressed();
             }
@@ -648,116 +437,33 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
-        // Handle navigation view item clicks here.
-        int id = item.getItemId();
-
-        if (id == R.id.nav_settings) {
-
-            mSlidingLayer.openLayer(true);
-            if (menuMultipleActions.isShown()) {
-                menuMultipleActions.setVisibility(View.INVISIBLE);
-            }
-        }
-
-        drawer.closeDrawer(GravityCompat.START);
-        return true;
+    protected void onDestroy() {
+        super.onDestroy();
+        // remember to clean up after ourselves
+        mIALocationManager.destroy();
     }
 
-    // Routing functions
-
-    /**
-     * Sets up a RouteTask from the NetworkDatasets in the current map. Shows a message to user if network dataset is
-     * not found.
-     */
-    private void setupOfflineNetwork(ArcGISMap mMap) {
-
-        if ((mMap.getTransportationNetworks() == null) || (mMap.getTransportationNetworks().size() < 1)) {
-            Snackbar.make(mMapView, getString(R.string.network_dataset_not_found), Snackbar.LENGTH_SHORT).show();
-            return;
-        }
-
-        // Create the RouteTask from network data set using same map used in display
-        mRouteTask = new RouteTask(MainActivity.this, mMap.getTransportationNetworks().get(0));
-        mRouteTask.addDoneLoadingListener(new Runnable() {
-            @Override
-            public void run() {
-                if (mRouteTask.getLoadStatus() != LoadStatus.LOADED) {
-                    Snackbar.make(mMapView, String.format(getString(R.string.object_not_loaded), "RouteTask"), Snackbar.LENGTH_SHORT).show();
-                }
-            }
-        });
-        mRouteTask.loadAsync();
+    @Override
+    protected void onPause() {
+        super.onPause();
+        // unregister location & region changes
+        mIALocationManager.removeLocationUpdates(mListener);
+        mIALocationManager.registerRegionListener(mRegionListener);
     }
 
     /**
-     * Solves a route using the existing geocoded address and hydrant locations, and displays a graphic of the route, and
-     * message with distance and time. Shows messages to user if locations are not set.
+     * Handle the results from the voice recognition activity.
      */
-    private void solveRoute() {
-
-        if (mRouteTask == null) {
-            Snackbar.make(mMapView, getString(R.string.route_task_not_set), Snackbar.LENGTH_SHORT).show();
-            return;
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == REQUEST_CODE && resultCode == RESULT_OK) {
+            // Populate the wordsList with the String values the recognition engine thought it heard
+            ArrayList<String> matches = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
+            Log.d("MATCHES", matches.toString());
+            //  TODO do something with the result
         }
-
-        RouteParameters routeParams;
-        try {
-            routeParams = mRouteTask.createDefaultParametersAsync().get();
-            routeParams.setReturnDirections(true);
-
-            Stop start = new Stop(points[0]);
-            routeParams.getStops().add(start);
-
-            Stop finish = new Stop(points[1]);
-            routeParams.getStops().add(finish);
-
-            final ListenableFuture<RouteResult> routeFuture = mRouteTask.solveRouteAsync(routeParams);
-
-            routeFuture.addDoneListener(new Runnable() {
-                @Override
-                public void run() {
-                    // Show results of solved route.
-                    RouteResult routeResult;
-                    try {
-                        if (routeFuture.isDone()) {
-                            int i = 0;
-                            routeResult = routeFuture.get();
-                            if (routeResult.getRoutes().size() > 0) {
-                                //  Add first result to the map as a graphic.
-                                Route topRoute = routeResult.getRoutes().get(0);
-                                mRouteGraphic = new Graphic(topRoute.getRouteGeometry(), mSolvedRouteSymbol);
-                                mRouteGraphic.setSelected(true);
-                                mRouteGraphic.setVisible(true);
-
-                                mRouteGraphic.setGeometry(topRoute.getRouteGeometry());
-                                mRouteGraphic.setZIndex(5);
-                                graphicsOverlay.getGraphics().add(mRouteGraphic);
-                                graphicsOverlay.setVisible(true);
-                                graphicsOverlay.setOpacity(1.0f);
-                                graphicsOverlay.setSelectionColor(0x56467839);
-
-
-                                // Display route distance and time.
-                                Snackbar.make(mMapView,
-                                        topRoute.getRouteName(), Snackbar.LENGTH_SHORT).show();
-
-                                mMapView.setViewpointGeometryAsync(topRoute.getRouteGeometry());
-
-                            }
-
-                        }
-                    } catch (InterruptedException | ExecutionException e) {
-                        Snackbar.make(mMapView, String.format(getString(R.string.route_error), e.getMessage()),
-                                Snackbar.LENGTH_SHORT).show();
-                        Log.e("SOLVE", e.getMessage());
-                    }
-                }
-            });
-        } catch (InterruptedException | ExecutionException e) {
-            Snackbar.make(mMapView, String.format(getString(R.string.route_params_error), e.getMessage()),
-                    Snackbar.LENGTH_SHORT).show();
-        }
+        super.onActivityResult(requestCode, resultCode, data);
     }
+
 
 }

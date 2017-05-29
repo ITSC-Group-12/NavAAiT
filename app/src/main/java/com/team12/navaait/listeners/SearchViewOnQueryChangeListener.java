@@ -9,14 +9,13 @@ import com.team12.navaait.NameSuggestion;
 
 import java.util.List;
 
-import static com.team12.navaait.MainActivity.FIND_SUGGESTION_SIMULATED_DELAY;
-
 /**
  * Created by Sam on 5/24/2017.
  */
 
 public class SearchViewOnQueryChangeListener implements FloatingSearchView.OnQueryChangeListener {
 
+    private static final long FIND_SUGGESTION_SIMULATED_DELAY = 250;
     private static final String TAG = "QueryChangeListener";
     private FloatingSearchView mSearchView;
     private Context context;
