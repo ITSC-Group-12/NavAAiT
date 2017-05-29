@@ -24,10 +24,10 @@ public interface ApiService {
 
     //  User APIs
     @POST("/api/user/register")
-    void registerUser(@Body User user, Callback<User> response);
+    void registerUser(@Body User user, RestCallback<User> response);
 
     @POST("/api/user/auth")
-    void auth(@Body User user, Callback<User> response);
+    void auth(@Body User user, RestCallback<User> response);
 
     @POST("/api/user/toggleVisiblity")
     void toggleVisibility(@Body User user, RestCallback<User> response);

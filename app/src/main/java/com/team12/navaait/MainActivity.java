@@ -35,7 +35,6 @@ import com.indooratlas.android.sdk.resources.IAResourceManager;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout.PanelState;
 import com.team12.navaait.domain.Location;
-import com.team12.navaait.domain.User;
 import com.team12.navaait.listeners.MapViewOnTouchListener;
 import com.team12.navaait.listeners.NavViewNavigationItemSelectedListener;
 import com.team12.navaait.listeners.SearchViewOnFocusChangeListener;
@@ -44,8 +43,6 @@ import com.team12.navaait.listeners.SearchViewOnQueryChangeListener;
 import com.team12.navaait.listeners.SearchViewOnSearchListener;
 import com.team12.navaait.listeners.SlideUpPanelListener;
 import com.team12.navaait.listeners.SlidingLayerOnInteractListener;
-import com.team12.navaait.rest.NavRestClient;
-import com.team12.navaait.rest.service.ApiService;
 import com.team12.navaait.services.MapService;
 import com.team12.navaait.services.UserService;
 import com.team12.navaait.util.Indoor;
@@ -62,10 +59,9 @@ import java.util.ArrayList;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnCheckedChanged;
 import butterknife.OnClick;
-import retrofit.Callback;
-import retrofit.RetrofitError;
-import retrofit.client.Response;
+import butterknife.OnFocusChange;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -133,12 +129,6 @@ public class MainActivity extends AppCompatActivity {
 
     private MainActivity activity = this;
 
-    String Fvalue;
-    String Lvalue;
-    String Ivalue;
-
-    ApiService apiService = new NavRestClient().getApiService();
-
     Indoor indoor;
     Outdoor outdoor;
 
@@ -166,10 +156,11 @@ public class MainActivity extends AppCompatActivity {
         extras.putString(IALocationManager.EXTRA_API_KEY, getString(R.string.indooratlas_api_key));
         extras.putString(IALocationManager.EXTRA_API_SECRET, getString(R.string.indooratlas_api_secret));
 
+        visibilitySwitch.setChecked(SharedPref.getBooleanPref(getApplicationContext(), SharedPref.USER_VISIBILITY));
+
         // instantiate IALocationManager and IAResourceManager
         mIALocationManager = IALocationManager.create(this, extras);
         mResourceManager = IAResourceManager.create(this);
-
 
         setupUI();
 
@@ -184,7 +175,6 @@ public class MainActivity extends AppCompatActivity {
         }
 
         outdoor = new Outdoor(mMapView, getApplicationContext());
-
         indoor = new Indoor(mMapView2, getApplicationContext(), mResourceManager);
         mListener = indoor.getmListener();
         mRegionListener = indoor.getmRegionListener();
@@ -192,10 +182,6 @@ public class MainActivity extends AppCompatActivity {
         // start receiving location updates & monitor region changes
         mIALocationManager.requestLocationUpdates(IALocationRequest.create(), mListener);
         mIALocationManager.registerRegionListener(mRegionListener);
-
-        Fvalue = SharedPref.getStringPref(getApplicationContext(), SharedPref.USER_FIRST_NAME);
-        Lvalue = SharedPref.getStringPref(getApplicationContext(), SharedPref.USER_LAST_NAME);
-        Ivalue = SharedPref.getStringPref(getApplicationContext(), SharedPref.USER_DEVICE_ID);
 
         t.setText("The Library");
         f1.setText("Show on Map");
@@ -266,7 +252,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
     }
-
+    
     @OnClick(R.id.update_card_view)
     public void download() {
 
@@ -319,31 +305,11 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Handle user visibility
      */
-    private void checkUserVisibility() {
+    @OnCheckedChanged(R.id.visibility_switch)
+    public void checkSwitch(boolean checked) {
 
-
-        User user = new User(null, Fvalue, Lvalue, Ivalue);
-        apiService.registerUser(user, new Callback<User>() {
-            @Override
-            public void success(User user, Response response) {
-                // TOdo the radio button
-                Toast.makeText(MainActivity.this, "do the radio button", Toast.LENGTH_SHORT).show();
-
-            }
-
-            @Override
-            public void failure(RetrofitError error) {
-                if (error != null) {
-//                    Log.e("TAG", error.getBody().toString());
-                    error.printStackTrace();
-                }
-            }
-
-        });
-
-
+        visibilitySwitch.setChecked(UserService.toggleVisibility(getApplicationContext()));
     }
-
 
     private void setupUI() {
 
@@ -464,6 +430,5 @@ public class MainActivity extends AppCompatActivity {
         }
         super.onActivityResult(requestCode, resultCode, data);
     }
-
 
 }

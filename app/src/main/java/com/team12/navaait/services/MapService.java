@@ -26,22 +26,23 @@ import retrofit.client.Response;
 
 public class MapService {
 
-    private static final String USER_TAG = "MapService";
+    private static final String MAP_TAG = "MapService";
+    private static final String WRITE_LOCATION = "/sdcard/ArcGIS/5kilo.mmpk";
 
-    public static ApiService apiService = new NavRestClient().getApiService();
+    private static ApiService apiService = new NavRestClient().getApiService();
 
     public static void checkVersion(final Context context, final ProgressBar progressBar) {
 
         apiService.checkVersion(new RestCallback<Map>() {
             @Override
             public void failure(RestError restError) {
-
+                Toast.makeText(context, "Error with Connection!", Toast.LENGTH_SHORT).show();
             }
 
             @Override
             public void success(Map map, Response response) {
                 Toast.makeText(context, map.getVersion(), Toast.LENGTH_SHORT).show();
-                String version = map.getVersion().toString();
+                String version = map.getVersion();
                 if (version.equals(SharedPref.getStringPref(context, SharedPref.MAP_VERSION))) {
                     Toast.makeText(context, "YOUR MAP IS ALREADY UPDATED!", Toast.LENGTH_SHORT).show();
                 } else {
@@ -54,7 +55,7 @@ public class MapService {
 
     }
 
-    public static void downloadMMPK(final Context context, String downloadUrl, final ProgressBar progressBar) {
+    private static void downloadMMPK(final Context context, String downloadUrl, final ProgressBar progressBar) {
         Ion.with(context)
                 .load(downloadUrl)
                 // have a ProgressBar get updated automatically with the percent
@@ -67,7 +68,7 @@ public class MapService {
                         System.out.println("" + downloaded + " / " + total);
                     }
                 })
-                .write(new File("/sdcard/ArcGIS/5kilo.mmpk"))
+                .write(new File(WRITE_LOCATION))
                 .setCallback(new FutureCallback<File>() {
                     @Override
                     public void onCompleted(Exception e, File file) {
