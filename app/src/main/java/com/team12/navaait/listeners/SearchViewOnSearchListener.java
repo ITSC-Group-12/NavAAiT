@@ -12,6 +12,7 @@ import com.esri.arcgisruntime.geometry.SpatialReferences;
 import com.esri.arcgisruntime.mapping.view.Callout;
 import com.esri.arcgisruntime.mapping.view.LocationDisplay;
 import com.esri.arcgisruntime.mapping.view.MapView;
+import com.team12.navaait.domain.LocationSuggestion;
 import com.team12.navaait.domain.NameSuggestion;
 
 /**
@@ -36,7 +37,7 @@ public class SearchViewOnSearchListener implements FloatingSearchView.OnSearchLi
     public void onSuggestionClicked(final SearchSuggestion searchSuggestion) {
 
 
-        NameSuggestion nameSuggestion = (NameSuggestion) searchSuggestion;
+        LocationSuggestion nameSuggestion = (LocationSuggestion) searchSuggestion;
 
         Point mapPoint = new Point(nameSuggestion.getLocation().getLatitude(), nameSuggestion.getLocation().getLongitude(), SpatialReferences.getWgs84());
         // convert to WGS84 for lat/lon format

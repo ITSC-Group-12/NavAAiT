@@ -15,4 +15,19 @@ public class LocationSuggestion extends NameSuggestion {
         this.location.setName(location.getName());
     }
 
+    public Location getLocation() {
+        return location;
+    }
+
+    @Override
+    public String getBody() {
+        return location.getName();
+
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
 }

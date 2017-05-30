@@ -31,6 +31,9 @@ public class NameSuggestion implements SearchSuggestion {
 
     }
 
+    public NameSuggestion(Parcel source) {
+
+    }
 
     @Override
     public String getBody() {
