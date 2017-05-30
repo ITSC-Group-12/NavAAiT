@@ -42,7 +42,6 @@ public class SharedPref {
     }
 
     public static void clearPrefs(@NonNull Context context) {
-
         context.getSharedPreferences(FILE, MODE_PRIVATE).edit().clear().commit();
     }
 

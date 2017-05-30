@@ -5,9 +5,11 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import com.team12.navaait.services.UserService;
 import com.team12.navaait.util.DeviceInfo;
+import com.team12.navaait.util.SharedPref;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -27,10 +29,10 @@ public class RegisterActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
         ButterKnife.bind(this);
+//        SharedPref.clearPrefs(getApplicationContext());
+        UserService.checkAuth(getApplicationContext(), this);
+        UserService.checkOfflineAuth(getApplicationContext(), this);
 
-        if (UserService.checkAuth(getApplicationContext()) && UserService.checkOfflineAuth(getApplicationContext())) {
-            startHomeActivity();
-        }
     }
 
     @OnClick(R.id.btn_register)
@@ -40,13 +42,11 @@ public class RegisterActivity extends AppCompatActivity {
         } else if (lastname.getText().toString().isEmpty()) {
             lastname.setError("Please provide Last Name");
         } else {
-            if (UserService.createAccount(getApplicationContext(), firstname.getText().toString(), firstname.getText().toString(), DeviceInfo.getDeviceID())) {
-                startHomeActivity();
-            }
+            UserService.createAccount(getApplicationContext(), firstname.getText().toString(), firstname.getText().toString(), DeviceInfo.getDeviceID(), this);
         }
     }
 
-    private void startHomeActivity() {
+    public void startHomeActivity() {
         Intent intent = new Intent(this, MainActivity.class);
         startActivity(intent);
         finish();

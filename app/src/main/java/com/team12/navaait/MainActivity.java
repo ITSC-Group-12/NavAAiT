@@ -83,6 +83,8 @@ public class MainActivity extends AppCompatActivity {
     TextView visibilityText;
     @BindView(R.id.visibility_switch)
     Switch visibilitySwitch;
+    @BindView(R.id.close)
+    FloatingActionButton closeAction;
     @BindView(R.id.map_view)
     MapView mMapView;
     @BindView(R.id.map_view2)
@@ -252,7 +254,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
     }
-    
+
     @OnClick(R.id.update_card_view)
     public void download() {
 
