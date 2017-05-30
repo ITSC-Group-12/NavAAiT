@@ -10,6 +10,22 @@ public class Location {
 
     private double latitude;
     private double longitude;
+    private String name;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public Location(double latitude, double longitude, String name) {
+
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.name = name;
+    }
 
     public Location() {
     }

@@ -4,8 +4,8 @@ import android.content.Context;
 import android.util.Log;
 
 import com.arlib.floatingsearchview.FloatingSearchView;
-import com.team12.navaait.DataHelper;
-import com.team12.navaait.NameSuggestion;
+import com.team12.navaait.util.DataHelper;
+import com.team12.navaait.domain.NameSuggestion;
 
 import java.util.List;
 

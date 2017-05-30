@@ -310,7 +310,7 @@ public class MainActivity extends AppCompatActivity {
     @OnCheckedChanged(R.id.visibility_switch)
     public void checkSwitch(boolean checked) {
 
-        visibilitySwitch.setChecked(UserService.toggleVisibility(getApplicationContext()));
+//        visibilitySwitch.setChecked(UserService.toggleVisibility(getApplicationContext()));
     }
 
     private void setupUI() {
@@ -330,7 +330,6 @@ public class MainActivity extends AppCompatActivity {
         mMapView2.getOverlays().add(mTilesOverlay);
 
         mSearchView.attachNavigationDrawerToMenuButton(drawer);
-        mSwipeText.setText(getResources().getString(R.string.swipe_down_label));
 
         mSlidingLayer.setStickTo(SlidingLayer.STICK_TO_BOTTOM);
         mSlidingLayer.setLayerTransformer(new SlideJoyTransformer());

@@ -94,6 +94,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center|bottom"
                 android:drawablePadding="15dip"
+                android:text="@string/swipe_down_label"
                 android:textColor="@color/primary_text"
                 android:textSize="17sp" />
 

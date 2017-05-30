@@ -14,6 +14,8 @@ import com.team12.navaait.rest.service.ApiService;
 import com.team12.navaait.rest.util.RestCallback;
 import com.team12.navaait.util.SharedPref;
 
+import java.util.Set;
+
 import retrofit.client.Response;
 
 /**
@@ -47,6 +49,24 @@ public class UserService {
             public void success(User user, Response response) {
                 Log.i(USER_TAG, "YAY! I KNOW WHERE I AM.");
                 Toast.makeText(context, "YAY! I KNOW WHERE I AM.", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+    }
+
+    public static void search(final Context context,String searchKey){
+        final String firstName = SharedPref.getStringPref(context, SharedPref.USER_FIRST_NAME);
+
+        apiService.search(searchKey, new RestCallback<Set<User>>() {
+            @Override
+            public void failure(RestError restError) {
+
+            }
+
+            @Override
+            public void success(Set<User> users, Response response) {
+
+
             }
         });
 

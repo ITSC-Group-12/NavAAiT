@@ -1,4 +1,4 @@
-package com.team12.navaait;
+package com.team12.navaait.domain;
 
 import android.os.Parcel;
 
@@ -21,35 +21,38 @@ import com.arlib.floatingsearchview.suggestions.model.SearchSuggestion;
  */
 
 public class NameSuggestion implements SearchSuggestion {
-
-    private Location location = new Location();
     private boolean mIsHistory = false;
 
-    public NameSuggestion(Location location) {
-        this.location.setLatitude(location.getLatitude());
-        this.location.setLongitude(location.getLongitude());
-        this.location.setName(location.getName());
+    public NameSuggestion(Location source) {
+
     }
 
-    public NameSuggestion(Parcel source) {
-        this.mIsHistory = source.readInt() != 0;
+    public NameSuggestion(User user) {
+
     }
 
-    public void setIsHistory(boolean isHistory) {
-        this.mIsHistory = isHistory;
-    }
-
-    public boolean getIsHistory() {
-        return this.mIsHistory;
-    }
 
     @Override
     public String getBody() {
-        return location.getName();
+        return null;
     }
 
-    public Location getLocation() {
-        return location;
+    public boolean getIsHistory() {
+        return mIsHistory;
+    }
+
+    public void setIsHistory(boolean history) {
+        mIsHistory = history;
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+
     }
 
     public static final Creator<NameSuggestion> CREATOR = new Creator<NameSuggestion>() {
@@ -63,15 +66,4 @@ public class NameSuggestion implements SearchSuggestion {
             return new NameSuggestion[size];
         }
     };
-
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(location.getName());
-        dest.writeInt(mIsHistory ? 1 : 0);
-    }
 }

@@ -12,7 +12,7 @@ import com.esri.arcgisruntime.geometry.SpatialReferences;
 import com.esri.arcgisruntime.mapping.view.Callout;
 import com.esri.arcgisruntime.mapping.view.LocationDisplay;
 import com.esri.arcgisruntime.mapping.view.MapView;
-import com.team12.navaait.NameSuggestion;
+import com.team12.navaait.domain.NameSuggestion;
 
 /**
  * Created by Sam on 5/24/2017.
