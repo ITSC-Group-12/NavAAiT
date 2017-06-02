@@ -78,6 +78,7 @@ public class Outdoor {
                 if (mapPackage.getLoadStatus() == LoadStatus.LOADED && mapPackage.getMaps().size() > 0) {
                     // add the map from the mobile map package to the MapView
                     mMapView.setMap(mapPackage.getMaps().get(0));
+                    mMapView.setViewpointScaleAsync(3400.00);
                     mapPackage.getMaps().get(0).addDoneLoadingListener(new Runnable() {
                         @Override
                         public void run() {

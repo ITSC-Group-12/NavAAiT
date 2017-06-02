@@ -36,13 +36,13 @@ public class SharedPref {
         sharedPreferences.edit().putString(pref, value).apply();
     }
 
-    public static void putBooleanPref(@NonNull Context context, @NonNull String pref, @NonNull boolean value) {
+    public static void putBooleanPref(@NonNull Context context, @NonNull String pref, boolean value) {
         SharedPreferences sharedPreferences = context.getSharedPreferences(FILE, MODE_PRIVATE);
         sharedPreferences.edit().putBoolean(pref, value).apply();
     }
 
     public static void clearPrefs(@NonNull Context context) {
-        context.getSharedPreferences(FILE, MODE_PRIVATE).edit().clear().commit();
+        context.getSharedPreferences(FILE, MODE_PRIVATE).edit().clear().apply();
     }
 
 

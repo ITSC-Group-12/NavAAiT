@@ -23,7 +23,8 @@
         android:layout_marginEnd="16dp"
         android:layout_marginRight="16dp"
         android:layout_marginTop="60dp"
-        fab:fab_colorNormal="@color/white"
+        android:visibility="invisible"
+        fab:fab_colorNormal="@color/colorPrimaryDark"
         fab:fab_colorPressed="@color/white_pressed"
         fab:fab_title="Close" />
 
@@ -44,7 +45,7 @@
             android:layout_height="wrap_content"
             fab:fab_colorNormal="@color/white"
             fab:fab_colorPressed="@color/white_pressed"
-            fab:fab_title="Action A" />
+            fab:fab_title="Registrar" />
 
         <com.getbase.floatingactionbutton.FloatingActionButton
             android:id="@+id/action_b"
@@ -52,7 +53,7 @@
             android:layout_height="wrap_content"
             fab:fab_colorNormal="@color/white"
             fab:fab_colorPressed="@color/white_pressed"
-            fab:fab_title="Action B" />
+            fab:fab_title="Office" />
 
         <com.getbase.floatingactionbutton.FloatingActionButton
             android:id="@+id/action_c"
@@ -60,7 +61,7 @@
             android:layout_height="wrap_content"
             fab:fab_colorNormal="@color/white"
             fab:fab_colorPressed="@color/white_pressed"
-            fab:fab_title="Action C" />
+            fab:fab_title="Auditorium" />
 
         <com.getbase.floatingactionbutton.FloatingActionButton
             android:id="@+id/action_d"
@@ -68,7 +69,7 @@
             android:layout_height="wrap_content"
             fab:fab_colorNormal="@color/white"
             fab:fab_colorPressed="@color/white_pressed"
-            fab:fab_title="Action D" />
+            fab:fab_title="Lounge" />
 
     </com.getbase.floatingactionbutton.FloatingActionsMenu>
 

@@ -17,20 +17,15 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:paddingTop="@dimen/nav_header_vertical_spacing"
-        app:srcCompat="@android:drawable/sym_def_app_icon"
-        android:contentDescription="Navigation View Image"/>
+        app:srcCompat="@drawable/ic_action_name"
+        android:contentDescription="@string/navigation_view_image_txt"/>
 
     <TextView
+        android:id="@+id/welcome_name_label"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingTop="@dimen/nav_header_vertical_spacing"
-        android:text="Android Studio"
+        android:text="@string/nav_view_text"
         android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
-
-    <TextView
-        android:id="@+id/textView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="android.studio@android.com" />
 
 </LinearLayout>

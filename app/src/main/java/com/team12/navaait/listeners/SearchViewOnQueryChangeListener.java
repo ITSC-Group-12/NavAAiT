@@ -4,8 +4,9 @@ import android.content.Context;
 import android.util.Log;
 
 import com.arlib.floatingsearchview.FloatingSearchView;
+import com.team12.navaait.domain.NavSearchSuggestion;
+import com.team12.navaait.services.UserService;
 import com.team12.navaait.util.DataHelper;
-import com.team12.navaait.domain.NameSuggestion;
 
 import java.util.List;
 
@@ -15,7 +16,6 @@ import java.util.List;
 
 public class SearchViewOnQueryChangeListener implements FloatingSearchView.OnQueryChangeListener {
 
-    private static final long FIND_SUGGESTION_SIMULATED_DELAY = 250;
     private static final String TAG = "QueryChangeListener";
     private FloatingSearchView mSearchView;
     private Context context;
@@ -36,21 +36,19 @@ public class SearchViewOnQueryChangeListener implements FloatingSearchView.OnQue
             mSearchView.showProgress();
 
             //simulates a query call to a data source with a new query.
-            DataHelper.findSuggestions(context, newQuery, 5,
-                    FIND_SUGGESTION_SIMULATED_DELAY, new DataHelper.OnFindSuggestionsListener() {
+            UserService.search(context, newQuery, new DataHelper.OnFindSuggestionsListener() {
 
-                        @Override
-                        public void onResults(List<NameSuggestion> results) {
+                @Override
+                public void onResults(List<NavSearchSuggestion> results) {
 
-                            //this will swap the data and
-                            //render the collapse/expand animations as necessary
-                            mSearchView.swapSuggestions(results);
+                    //this will swap the data and render the collapse/expand animations as necessary
+                    mSearchView.swapSuggestions(results);
 
-                            //let the users know that the background
-                            //process has completed
-                            mSearchView.hideProgress();
-                        }
-                    });
+                    //let the users know that the background process has completed
+                    mSearchView.hideProgress();
+                }
+            });
+
         }
 
         Log.d(TAG, "onSearchTextChanged()");

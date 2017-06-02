@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.speech.RecognizerIntent;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
@@ -14,6 +15,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.Switch;
@@ -23,8 +25,10 @@ import android.widget.ViewFlipper;
 
 import com.arlib.floatingsearchview.FloatingSearchView;
 import com.esri.arcgisruntime.geometry.Point;
+import com.esri.arcgisruntime.mapping.view.GraphicsOverlay;
 import com.esri.arcgisruntime.mapping.view.LocationDisplay;
 import com.esri.arcgisruntime.mapping.view.MapView;
+import com.esri.arcgisruntime.util.ListenableList;
 import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.getbase.floatingactionbutton.FloatingActionsMenu;
 import com.indooratlas.android.sdk.IALocationListener;
@@ -61,7 +65,6 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnCheckedChanged;
 import butterknife.OnClick;
-import butterknife.OnFocusChange;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -104,11 +107,9 @@ public class MainActivity extends AppCompatActivity {
     @BindView(R.id.swipe_down)
     TextView mSwipeText;
     @BindView(R.id.location_name)
-    TextView t;
-    @BindView(R.id.show_location)
-    Button f1;
+    TextView slideUpLocationLabel;
     @BindView(R.id.show_directions)
-    Button f2;
+    Button slideUpShowLocationButton;
     @BindView(R.id.multiple_actions)
     FloatingActionsMenu menuMultipleActions;
     @BindView(R.id.action_a)
@@ -123,6 +124,7 @@ public class MainActivity extends AppCompatActivity {
     //Map Stuff
     private LocationDisplay mLocationDisplay;
 
+    private Snackbar locationSnackbar;
     private Point startingPoint = null;
     private Point endingPoint = null;
 
@@ -131,8 +133,8 @@ public class MainActivity extends AppCompatActivity {
 
     private MainActivity activity = this;
 
-    Indoor indoor;
-    Outdoor outdoor;
+    private Indoor indoor;
+    private Outdoor outdoor;
 
     // Search Stuff
     private String mLastQuery = "";
@@ -145,6 +147,7 @@ public class MainActivity extends AppCompatActivity {
 
     private static final int requestCode1 = 2;
     private static final int requestCode2 = 3;
+
     private IALocationListener mListener;
     private IARegion.Listener mRegionListener;
 
@@ -154,11 +157,10 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
 
+
         Bundle extras = new Bundle(2);
         extras.putString(IALocationManager.EXTRA_API_KEY, getString(R.string.indooratlas_api_key));
         extras.putString(IALocationManager.EXTRA_API_SECRET, getString(R.string.indooratlas_api_secret));
-
-        visibilitySwitch.setChecked(SharedPref.getBooleanPref(getApplicationContext(), SharedPref.USER_VISIBILITY));
 
         // instantiate IALocationManager and IAResourceManager
         mIALocationManager = IALocationManager.create(this, extras);
@@ -174,7 +176,10 @@ public class MainActivity extends AppCompatActivity {
             // try to set the starting point to the user's location
             mLocationDisplay.startAsync();
             startingPoint = mLocationDisplay.getLocation().getPosition();
+        } else {
+            locationSnackbar.show();
         }
+
 
         outdoor = new Outdoor(mMapView, getApplicationContext());
         indoor = new Indoor(mMapView2, getApplicationContext(), mResourceManager);
@@ -185,18 +190,14 @@ public class MainActivity extends AppCompatActivity {
         mIALocationManager.requestLocationUpdates(IALocationRequest.create(), mListener);
         mIALocationManager.registerRegionListener(mRegionListener);
 
-        t.setText("The Library");
-        f1.setText("Show on Map");
-        f2.setText("Show Directions");
-
         mSearchView.setOnQueryChangeListener(new SearchViewOnQueryChangeListener(mSearchView, getApplicationContext()));
-        mSearchView.setOnSearchListener(new SearchViewOnSearchListener(mLocationDisplay, mLastQuery, mMapView));
+        mSearchView.setOnSearchListener(new SearchViewOnSearchListener(mLocationDisplay, mLastQuery, mMapView, slideUpLocationLabel, mSlideUpPanel, this));
         mSearchView.setOnFocusChangeListener(new SearchViewOnFocusChangeListener(mSearchView, mLastQuery));
         mSearchView.setOnMenuItemClickListener(new SearchViewOnMenuItemClickListener(mLocationDisplay, getApplicationContext(), activity));
         mSlidingLayer.setOnInteractListener(new SlidingLayerOnInteractListener(menuMultipleActions));
         mMapView.setOnTouchListener(new MapViewOnTouchListener(mMapView, getApplicationContext(), endingPoint));
         navigationView.setNavigationItemSelectedListener(new NavViewNavigationItemSelectedListener(mSlidingLayer, menuMultipleActions, drawer));
-        mSlideUpPanel.addPanelSlideListener(new SlideUpPanelListener());
+        mSlideUpPanel.addPanelSlideListener(new SlideUpPanelListener(menuMultipleActions));
         mSlideUpPanel.setFadeOnClickListener(new SlideUpPanelListener(mSlideUpPanel));
 
         // For API level 23+ request permission at runtime
@@ -207,30 +208,22 @@ public class MainActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(MainActivity.this, reqPermission, requestCode1);
         }
 
-        mLocationDisplay.addLocationChangedListener(new LocationDisplay.LocationChangedListener() {
-            @Override
-            public void onLocationChanged(LocationDisplay.LocationChangedEvent locationChangedEvent) {
-                if (mLocationDisplay.getLocation().getPosition() != null) {
-
-                    Point currentLocation = mLocationDisplay.getLocation().getPosition();
-                    UserService.setLocation(getApplicationContext(), new Location("", currentLocation.getX(), currentLocation.getY()));
-                }
-            }
-        });
-
-
         // Listen to changes in the status of the location data source.
         mLocationDisplay.addDataSourceStatusChangedListener(new LocationDisplay.DataSourceStatusChangedListener() {
             @Override
             public void onStatusChanged(LocationDisplay.DataSourceStatusChangedEvent dataSourceStatusChangedEvent) {
 
                 // If LocationDisplay started OK, then continue.
-                if (dataSourceStatusChangedEvent.isStarted())
+                if (dataSourceStatusChangedEvent.isStarted()) {
+                    locationSnackbar.dismiss();
                     return;
+                }
 
                 // No error is reported, then continue.
-                if (dataSourceStatusChangedEvent.getError() == null)
+                if (dataSourceStatusChangedEvent.getError() == null) {
+                    locationSnackbar.dismiss();
                     return;
+                }
 
                 // If an error is found, handle the failure to start.
                 // Check permissions to see if failure may be due to lack of permissions.
@@ -248,10 +241,24 @@ public class MainActivity extends AppCompatActivity {
                     String message = String.format("Error in DataSourceStatusChangedListener: %s", dataSourceStatusChangedEvent
                             .getSource().getLocationDataSource().getError().getMessage());
                     Toast.makeText(MainActivity.this, message, Toast.LENGTH_LONG).show();
+                    locationSnackbar.show();
 
                 }
             }
         });
+
+        mLocationDisplay.addLocationChangedListener(new LocationDisplay.LocationChangedListener() {
+            @Override
+            public void onLocationChanged(LocationDisplay.LocationChangedEvent locationChangedEvent) {
+                if (mLocationDisplay.getLocation().getPosition() != null) {
+                    locationSnackbar.dismiss();
+                    Point currentLocation = mLocationDisplay.getLocation().getPosition();
+                    startingPoint = currentLocation;
+                    UserService.setLocation(getApplicationContext(), new Location("", currentLocation.getX(), currentLocation.getY()));
+                }
+            }
+        });
+
 
     }
 
@@ -261,46 +268,49 @@ public class MainActivity extends AppCompatActivity {
         MapService.checkVersion(getApplicationContext(), downloadProgressBar);
     }
 
-    @OnClick({R.id.action_a, R.id.action_b, R.id.action_c, R.id.action_d})
+    @OnClick({R.id.action_a, R.id.action_b, R.id.action_c, R.id.action_d, R.id.close})
     public void fabAction(FloatingActionButton fab) {
-        if (fab.getId() == R.id.action_a) {
-
-            actionA.setTitle("Action A clicked");
-        } else if (fab.getId() == R.id.action_b) {
-
-            viewFlipper.showNext();
-        } else if (fab.getId() == R.id.action_c) {
-
-            if (mSlideUpPanel != null) {
-                if (mSlideUpPanel.getPanelState() != PanelState.HIDDEN) {
-                    mSlideUpPanel.setPanelState(PanelState.HIDDEN);
-                } else {
-                    mSlideUpPanel.setPanelState(PanelState.COLLAPSED);
+        if (fab.getId() == R.id.close) {
+            if (mSlideUpPanel.getPanelState() != PanelState.HIDDEN) {
+                mSlideUpPanel.setPanelState(PanelState.HIDDEN);
+                slideUpLocationLabel.setText("");
+                menuMultipleActions.setVisibility(View.VISIBLE);
+                endingPoint = null;
+                ListenableList<GraphicsOverlay> overlays = mMapView.getGraphicsOverlays();
+                for (GraphicsOverlay g : overlays) {
+                    overlays.removeAll(overlays);
                 }
+                closeAction.setVisibility(View.INVISIBLE);
+
+            } else if (fab.getId() == R.id.action_a) {
+
+                actionA.setTitle("Action A clicked");
+            } else if (fab.getId() == R.id.action_b) {
+                viewFlipper.showNext();
+            } else if (fab.getId() == R.id.action_c) {
+
+            } else if (fab.getId() == R.id.action_d) {
+
             }
-        } else if (fab.getId() == R.id.action_d) {
+
+        }
+    }
+
+    @OnClick(R.id.show_directions)
+    public void action(Button button) {
+        if (button.getId() == R.id.show_directions) {
             if (startingPoint != null) {
                 if (endingPoint != null) {
-
                     outdoor.solveRoute(startingPoint, endingPoint);
+                    if (!closeAction.isShown()) {
+                        closeAction.setVisibility(View.VISIBLE);
+                    }
                 } else {
-
                     Toast.makeText(MainActivity.this, "Ending Point Not Set", Toast.LENGTH_SHORT).show();
                 }
             } else {
-
                 Toast.makeText(MainActivity.this, "Starting Point Not Set", Toast.LENGTH_SHORT).show();
             }
-        }
-
-    }
-
-    @OnClick({R.id.show_location, R.id.show_directions})
-    public void action(Button button) {
-        if (button.getId() == R.id.show_location) {
-
-        } else if (button.getId() == R.id.show_directions) {
-
         }
     }
 
@@ -315,22 +325,22 @@ public class MainActivity extends AppCompatActivity {
 
     private void setupUI() {
 
-
+        locationSnackbar = Snackbar.make(mMapView, "Please turn location on for routing!", Snackbar.LENGTH_INDEFINITE);
+        visibilitySwitch.setChecked(SharedPref.getBooleanPref(getApplicationContext(), SharedPref.USER_VISIBILITY));
         mMapView2.setTilesScaledToDpi(true);
         mMapView2.setBuiltInZoomControls(true);
         mMapView2.getController().setZoom(18);
 
-        TilesOverlay mTilesOverlay;
-        MapTileProviderBasic mProvider;
+        View headerView = navigationView.getHeaderView(0);
+        TextView welcomeNameLabel = (TextView) headerView.findViewById(R.id.welcome_name_label);
+        welcomeNameLabel.setText("Hello " + SharedPref.getStringPref(getApplicationContext(), SharedPref.USER_FIRST_NAME)
+                + " " + SharedPref.getStringPref(getApplicationContext(), SharedPref.USER_LAST_NAME));
 
-        mProvider = new MapTileProviderBasic(getApplicationContext());
+        MapTileProviderBasic mProvider = new MapTileProviderBasic(getApplicationContext());
         mProvider.setTileSource(TileSourceFactory.DEFAULT_TILE_SOURCE);
-
-        mTilesOverlay = new TilesOverlay(mProvider, getBaseContext());
+        TilesOverlay mTilesOverlay = new TilesOverlay(mProvider, getBaseContext());
         mMapView2.getOverlays().add(mTilesOverlay);
-
         mSearchView.attachNavigationDrawerToMenuButton(drawer);
-
         mSlidingLayer.setStickTo(SlidingLayer.STICK_TO_BOTTOM);
         mSlidingLayer.setLayerTransformer(new SlideJoyTransformer());
         mSlidingLayer.setShadowSizeRes(R.dimen.shadow_size);
@@ -432,4 +442,7 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
     }
 
+    public void setEndingPoint(Point endingPoint) {
+        this.endingPoint = endingPoint;
+    }
 }

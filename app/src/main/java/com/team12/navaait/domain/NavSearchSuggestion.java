@@ -20,19 +20,30 @@ import com.arlib.floatingsearchview.suggestions.model.SearchSuggestion;
  * limitations under the License.
  */
 
-public class NameSuggestion implements SearchSuggestion {
+public class NavSearchSuggestion implements SearchSuggestion {
+
+    private boolean isLocation;
+    private boolean isUser;
     private boolean mIsHistory = false;
 
-    public NameSuggestion(Location source) {
+    public NavSearchSuggestion(Location location, boolean isLocation) {
+        this.isLocation = isLocation;
+    }
+
+    public NavSearchSuggestion(User user, boolean isUser) {
+        this.isUser = isUser;
+    }
+
+    public NavSearchSuggestion(Parcel source) {
 
     }
 
-    public NameSuggestion(User user) {
-
+    public boolean isLocation() {
+        return isLocation;
     }
 
-    public NameSuggestion(Parcel source) {
-
+    public boolean isUser() {
+        return isUser;
     }
 
     @Override
@@ -58,15 +69,15 @@ public class NameSuggestion implements SearchSuggestion {
 
     }
 
-    public static final Creator<NameSuggestion> CREATOR = new Creator<NameSuggestion>() {
+    public static final Creator<NavSearchSuggestion> CREATOR = new Creator<NavSearchSuggestion>() {
         @Override
-        public NameSuggestion createFromParcel(Parcel in) {
-            return new NameSuggestion(in);
+        public NavSearchSuggestion createFromParcel(Parcel in) {
+            return new NavSearchSuggestion(in);
         }
 
         @Override
-        public NameSuggestion[] newArray(int size) {
-            return new NameSuggestion[size];
+        public NavSearchSuggestion[] newArray(int size) {
+            return new NavSearchSuggestion[size];
         }
     };
 }

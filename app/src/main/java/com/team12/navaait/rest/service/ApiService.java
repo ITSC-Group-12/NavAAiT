@@ -6,7 +6,6 @@ import com.team12.navaait.rest.util.RestCallback;
 
 import java.util.Set;
 
-import retrofit.Callback;
 import retrofit.http.Body;
 import retrofit.http.Field;
 import retrofit.http.FormUrlEncoded;

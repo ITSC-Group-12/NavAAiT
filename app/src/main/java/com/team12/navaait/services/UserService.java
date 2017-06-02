@@ -12,8 +12,10 @@ import com.team12.navaait.rest.NavRestClient;
 import com.team12.navaait.rest.model.RestError;
 import com.team12.navaait.rest.service.ApiService;
 import com.team12.navaait.rest.util.RestCallback;
+import com.team12.navaait.util.DataHelper;
 import com.team12.navaait.util.SharedPref;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import retrofit.client.Response;
@@ -54,19 +56,19 @@ public class UserService {
 
     }
 
-    public static void search(final Context context,String searchKey){
-        final String firstName = SharedPref.getStringPref(context, SharedPref.USER_FIRST_NAME);
+    public static void search(final Context context, final String searchKey, final DataHelper.OnFindSuggestionsListener listener) {
 
         apiService.search(searchKey, new RestCallback<Set<User>>() {
             @Override
             public void failure(RestError restError) {
-
+                Set<User> users = new HashSet<User>();
+                DataHelper.findSuggestions(context, searchKey, 5, users, listener);
             }
 
             @Override
             public void success(Set<User> users, Response response) {
 
-
+                DataHelper.findSuggestions(context, searchKey, 5, users, listener);
             }
         });
 

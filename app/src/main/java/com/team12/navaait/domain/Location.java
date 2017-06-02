@@ -12,14 +12,6 @@ public class Location {
     private double longitude;
     private String name;
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
     public Location(double latitude, double longitude, String name) {
 
         this.latitude = latitude;
@@ -34,6 +26,14 @@ public class Location {
         this.id = id;
         this.latitude = latitude;
         this.longitude = longitude;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getId() {
