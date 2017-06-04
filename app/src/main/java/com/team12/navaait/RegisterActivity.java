@@ -28,9 +28,10 @@ public class RegisterActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
         ButterKnife.bind(this);
-        SharedPref.putStringPref(getApplicationContext(), SharedPref.USER_FIRST_NAME, "Sam");
-        SharedPref.putStringPref(getApplicationContext(), SharedPref.USER_LAST_NAME, "Sam");
-        SharedPref.putStringPref(getApplicationContext(), SharedPref.USER_DEVICE_ID, "oneplus");
+        // for testing purposes only
+//        SharedPref.putStringPref(getApplicationContext(), SharedPref.USER_FIRST_NAME, "Sam");
+//        SharedPref.putStringPref(getApplicationContext(), SharedPref.USER_LAST_NAME, "Sam");
+//        SharedPref.putStringPref(getApplicationContext(), SharedPref.USER_DEVICE_ID, "oneplus");
 //        SharedPref.clearPrefs(getApplicationContext());
         UserService.checkAuth(getApplicationContext(), this);
         UserService.checkOfflineAuth(getApplicationContext(), this);
@@ -43,7 +44,7 @@ public class RegisterActivity extends AppCompatActivity {
         } else if (lastName.getText().toString().isEmpty()) {
             lastName.setError("Please provide Last Name");
         } else {
-            UserService.createAccount(getApplicationContext(), firstName.getText().toString(), firstName.getText().toString(), DeviceInfo.getDeviceID(), this);
+            UserService.createAccount(getApplicationContext(), firstName.getText().toString(), lastName.getText().toString(), DeviceInfo.getDeviceID(), this);
         }
     }
 

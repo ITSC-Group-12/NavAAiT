@@ -1,8 +1,10 @@
 package com.team12.navaait.listeners;
 
+import android.content.Context;
 import android.graphics.Color;
 import android.util.Log;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.arlib.floatingsearchview.FloatingSearchView;
 import com.arlib.floatingsearchview.suggestions.model.SearchSuggestion;
@@ -31,14 +33,16 @@ public class SearchViewOnSearchListener implements FloatingSearchView.OnSearchLi
     private Callout mCallout;
     private MapView mMapView;
     private SlidingUpPanelLayout mSlideUpPanel;
+    private Context context;
     private MainActivity mainActivity;
 
-    public SearchViewOnSearchListener(LocationDisplay mLocationDisplay, String mLastQuery, MapView mMapView, TextView slideUpLocationLabel, SlidingUpPanelLayout mSlideUpPanel, MainActivity mainActivity) {
+    public SearchViewOnSearchListener(LocationDisplay mLocationDisplay, String mLastQuery, MapView mMapView, TextView slideUpLocationLabel, SlidingUpPanelLayout mSlideUpPanel, Context context, MainActivity mainActivity) {
         this.mLocationDisplay = mLocationDisplay;
         this.mLastQuery = mLastQuery;
         this.mMapView = mMapView;
         this.slideUpLocationLabel = slideUpLocationLabel;
         this.mSlideUpPanel = mSlideUpPanel;
+        this.context = context;
         this.mainActivity = mainActivity;
     }
 
@@ -59,8 +63,14 @@ public class SearchViewOnSearchListener implements FloatingSearchView.OnSearchLi
         } else if (suggestion.isUser()) {
 
             userSuggestion = (UserSuggestion) searchSuggestion;
-            mapPoint = new Point(userSuggestion.getUser().getLocation().getLatitude(), userSuggestion.getUser().getLocation().getLongitude(), SpatialReferences.getWgs84());
-            slideUpLocationLabel.setText(userSuggestion.getUser().getFirstName() + " " + userSuggestion.getUser().getLastName() + "'s Last Known Location");
+            if (userSuggestion.getUser().getLocation() != null){
+
+                mapPoint = new Point(userSuggestion.getUser().getLocation().getLatitude(), userSuggestion.getUser().getLocation().getLongitude(), SpatialReferences.getWgs84());
+                slideUpLocationLabel.setText(userSuggestion.getUser().getFirstName() + " " + userSuggestion.getUser().getLastName() + "'s Last Known Location");
+            }
+            else{
+                Toast.makeText(context, "User location could not be determined!", Toast.LENGTH_SHORT).show();
+            }
         }
 
         // convert to WGS84 for lat/lon format
