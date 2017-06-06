@@ -191,7 +191,7 @@ public class MainActivity extends AppCompatActivity {
         mIALocationManager.registerRegionListener(mRegionListener);
 
         mSearchView.setOnQueryChangeListener(new SearchViewOnQueryChangeListener(mSearchView, getApplicationContext()));
-        mSearchView.setOnSearchListener(new SearchViewOnSearchListener(mLocationDisplay, mLastQuery, mMapView, slideUpLocationLabel, mSlideUpPanel, getApplicationContext(), this));
+        mSearchView.setOnSearchListener(new SearchViewOnSearchListener(mLocationDisplay, mLastQuery, mMapView, slideUpLocationLabel, mSlideUpPanel, closeAction, getApplicationContext(), this));
         mSearchView.setOnFocusChangeListener(new SearchViewOnFocusChangeListener(mSearchView, mLastQuery));
         mSearchView.setOnMenuItemClickListener(new SearchViewOnMenuItemClickListener(mLocationDisplay, getApplicationContext(), activity));
         mSlidingLayer.setOnInteractListener(new SlidingLayerOnInteractListener(menuMultipleActions));
@@ -302,9 +302,6 @@ public class MainActivity extends AppCompatActivity {
             if (startingPoint != null) {
                 if (endingPoint != null) {
                     outdoor.solveRoute(startingPoint, endingPoint);
-                    if (!closeAction.isShown()) {
-                        closeAction.setVisibility(View.VISIBLE);
-                    }
                 } else {
                     Toast.makeText(MainActivity.this, "Ending Point Not Set", Toast.LENGTH_SHORT).show();
                 }

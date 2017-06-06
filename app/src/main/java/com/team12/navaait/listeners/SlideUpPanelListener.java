@@ -38,9 +38,9 @@ public class SlideUpPanelListener implements SlidingUpPanelLayout.PanelSlideList
     public void onPanelStateChanged(View panel, SlidingUpPanelLayout.PanelState previousState, SlidingUpPanelLayout.PanelState newState) {
         Log.i(TAG, previousState.toString());
         Log.i(TAG, newState.toString());
-        if (previousState == SlidingUpPanelLayout.PanelState.COLLAPSED && newState == SlidingUpPanelLayout.PanelState.DRAGGING) {
+        if (previousState == SlidingUpPanelLayout.PanelState.HIDDEN && newState == SlidingUpPanelLayout.PanelState.DRAGGING) {
             floatingActionsMenu.setVisibility(View.INVISIBLE);
-        } else if (previousState == SlidingUpPanelLayout.PanelState.DRAGGING && newState == SlidingUpPanelLayout.PanelState.COLLAPSED) {
+        } else if (previousState == SlidingUpPanelLayout.PanelState.DRAGGING && newState == SlidingUpPanelLayout.PanelState.HIDDEN) {
             floatingActionsMenu.setVisibility(View.VISIBLE);
         }
 

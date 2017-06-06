@@ -15,7 +15,7 @@
     <string name="update_text">Update Map</string>
     <string name="visibility_text">Visibility</string>
 
-    <string name="show_directions">Show Best Route</string>
+    <string name="show_directions">Show Route</string>
     <string name="navaait_app_logo">NavAAiT App Logo</string>
     <string name="hint_first_name">First Name</string>
     <string name="hint_last_name">Last Name</string>

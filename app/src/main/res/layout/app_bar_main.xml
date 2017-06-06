@@ -24,9 +24,10 @@
         android:layout_marginRight="16dp"
         android:layout_marginTop="60dp"
         android:visibility="invisible"
+        fab:fab_icon="@drawable/ic_cancel_action"
         fab:fab_colorNormal="@color/colorPrimaryDark"
         fab:fab_colorPressed="@color/white_pressed"
-        fab:fab_title="Close" />
+        fab:fab_title="Cancel" />
 
     <com.getbase.floatingactionbutton.FloatingActionsMenu
         android:id="@+id/multiple_actions"
@@ -73,7 +74,6 @@
 
     </com.getbase.floatingactionbutton.FloatingActionsMenu>
 
-
     <com.wunderlist.slidinglayer.SlidingLayer
         android:id="@+id/slidingLayer1"
         android:layout_width="match_parent"
@@ -87,7 +87,6 @@
 
             <include layout="@layout/visibility_card_view" />
             <include layout="@layout/update_card_view" />
-
 
             <TextView
                 android:id="@+id/swipe_down"
