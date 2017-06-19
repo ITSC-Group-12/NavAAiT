@@ -11,6 +11,8 @@
     <string name="route_task_not_set">RouteTask is not set</string>
     <string name="route_params_error" formatted="false">Error creating route parameters:\n%s</string>
     <string name="route_error" formatted="false">Error solving route:\n%s</string>
+    <string name="indooratlas_api_key">API_KEY</string>
+    <string name="indooratlas_api_secret">API_SECRET</string>
 
     <string name="update_text">Update Map</string>
     <string name="visibility_text">Visibility</string>
