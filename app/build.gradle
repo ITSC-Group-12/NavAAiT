@@ -11,6 +11,11 @@ android {
         // Enabling multidex support.
         multiDexEnabled true
 
+        // refers to https://geonet.esri.com/thread/168679
+        ndk {
+            abiFilters "armeabi", "armeabi-v7a", "x86", "mips"
+        }
+
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"

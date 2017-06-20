@@ -277,9 +277,7 @@ public class MainActivity extends AppCompatActivity {
                 menuMultipleActions.setVisibility(View.VISIBLE);
                 endingPoint = null;
                 ListenableList<GraphicsOverlay> overlays = mMapView.getGraphicsOverlays();
-                for (GraphicsOverlay g : overlays) {
-                    overlays.removeAll(overlays);
-                }
+                overlays.removeAll(overlays);
                 closeAction.setVisibility(View.INVISIBLE);
 
             } else if (fab.getId() == R.id.action_a) {
