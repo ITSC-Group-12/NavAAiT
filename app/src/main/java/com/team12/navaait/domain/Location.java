@@ -11,12 +11,21 @@ public class Location {
     private double latitude;
     private double longitude;
     private String name;
+    private String description;
 
     public Location(double latitude, double longitude, String name) {
 
         this.latitude = latitude;
         this.longitude = longitude;
         this.name = name;
+    }
+
+    public Location(double latitude, double longitude, String name, String description) {
+
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.name = name;
+        this.description = description;
     }
 
     public Location() {
@@ -28,6 +37,14 @@ public class Location {
         this.longitude = longitude;
     }
 
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
     public String getName() {
         return name;
     }

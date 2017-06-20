@@ -120,6 +120,8 @@ public class MainActivity extends AppCompatActivity {
     FloatingActionButton actionC;
     @BindView(R.id.action_d)
     FloatingActionButton actionD;
+    @BindView(R.id.slideup_description)
+    TextView slideupDesLabel;
 
     //Map Stuff
     private LocationDisplay mLocationDisplay;
@@ -191,7 +193,7 @@ public class MainActivity extends AppCompatActivity {
         mIALocationManager.registerRegionListener(mRegionListener);
 
         mSearchView.setOnQueryChangeListener(new SearchViewOnQueryChangeListener(mSearchView, getApplicationContext()));
-        mSearchView.setOnSearchListener(new SearchViewOnSearchListener(mLocationDisplay, mLastQuery, mMapView, slideUpLocationLabel, mSlideUpPanel, closeAction, getApplicationContext(), this));
+        mSearchView.setOnSearchListener(new SearchViewOnSearchListener(mLocationDisplay, mLastQuery, mMapView, slideUpLocationLabel, mSlideUpPanel, closeAction, getApplicationContext(), this,slideupDesLabel));
         mSearchView.setOnFocusChangeListener(new SearchViewOnFocusChangeListener(mSearchView, mLastQuery));
         mSearchView.setOnMenuItemClickListener(new SearchViewOnMenuItemClickListener(mLocationDisplay, getApplicationContext(), activity));
         mSlidingLayer.setOnInteractListener(new SlidingLayerOnInteractListener(menuMultipleActions));

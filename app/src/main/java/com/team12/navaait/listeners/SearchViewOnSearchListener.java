@@ -38,8 +38,9 @@ public class SearchViewOnSearchListener implements FloatingSearchView.OnSearchLi
     private FloatingActionButton closeAction;
     private Context context;
     private MainActivity mainActivity;
+    private TextView slideupDes;
 
-    public SearchViewOnSearchListener(LocationDisplay mLocationDisplay, String mLastQuery, MapView mMapView, TextView slideUpLocationLabel, SlidingUpPanelLayout mSlideUpPanel, FloatingActionButton closeAction, Context context, MainActivity mainActivity) {
+    public SearchViewOnSearchListener(LocationDisplay mLocationDisplay, String mLastQuery, MapView mMapView, TextView slideUpLocationLabel, SlidingUpPanelLayout mSlideUpPanel, FloatingActionButton closeAction, Context context, MainActivity mainActivity,TextView slidupDes) {
         this.mLocationDisplay = mLocationDisplay;
         this.mLastQuery = mLastQuery;
         this.mMapView = mMapView;
@@ -48,6 +49,7 @@ public class SearchViewOnSearchListener implements FloatingSearchView.OnSearchLi
         this.closeAction = closeAction;
         this.context = context;
         this.mainActivity = mainActivity;
+        this.slideupDes = slidupDes;
     }
 
     @Override
@@ -67,7 +69,7 @@ public class SearchViewOnSearchListener implements FloatingSearchView.OnSearchLi
             locationSuggestion = (LocationSuggestion) searchSuggestion;
             mapPoint = new Point(locationSuggestion.getLocation().getLongitude(), locationSuggestion.getLocation().getLatitude(), SpatialReferences.getWgs84());
             slideUpLocationLabel.setText(locationSuggestion.getLocation().getName());
-
+            slideupDes.setText(locationSuggestion.getLocation().getDescription());
             calloutContent.setText(locationSuggestion.getLocation().getName());
 
         } else if (suggestion.isUser()) {

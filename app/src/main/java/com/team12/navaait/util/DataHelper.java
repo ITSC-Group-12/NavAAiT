@@ -30,9 +30,9 @@ public class DataHelper {
     public static void findSuggestions(Context context, String query, final int limit, Set<User> users, final OnFindSuggestionsListener listener) {
 
         List<NavSearchSuggestion> sNavSearchSuggestions = new ArrayList<NavSearchSuggestion>(Arrays.asList(
-                new LocationSuggestion(new Location(9.0410, 38.7630, "Library and computer center complex")),
+                new LocationSuggestion(new Location(9.0410, 38.7630, "Library and computer center complex","The Library is where Educational books and tools are found.It is open 24/7 so that students can study over night too.")),
                 new LocationSuggestion(new Location(9.0409, 38.7627, "School of Chemical and bio-engineering")),
-                new LocationSuggestion(new Location(9.0411, 38.7626, "Janator")),
+                new LocationSuggestion(new Location(9.0411, 38.7626, "Janator", "")),
                 new LocationSuggestion(new Location(9.0409, 38.7626, "Dean, School of chemical and bio engineering")),
                 new LocationSuggestion(new Location(9.0408, 38.7626, "Secretary, school of chemical and bio engineering")),
                 new LocationSuggestion(new Location(9.0405, 38.7528, "Sece project room")),

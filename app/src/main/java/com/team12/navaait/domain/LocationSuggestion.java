@@ -13,6 +13,7 @@ public class LocationSuggestion extends NavSearchSuggestion {
         this.location.setLatitude(location.getLatitude());
         this.location.setLongitude(location.getLongitude());
         this.location.setName(location.getName());
+        this.location.setDescription(location.getDescription());
     }
 
     public Location getLocation() {
