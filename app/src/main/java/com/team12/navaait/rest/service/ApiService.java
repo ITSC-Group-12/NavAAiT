@@ -37,4 +37,7 @@ public interface ApiService {
     @POST("/api/user/search")
     @FormUrlEncoded
     void search(@Field("searchKey") String searchKey, RestCallback<Set<User>> response);
+
+    @POST("/api/user/updateName")
+    void updateName(@Body User user, RestCallback<User> response);
 }

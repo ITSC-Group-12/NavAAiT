@@ -133,6 +133,25 @@ public class UserService {
         });
     }
 
+    public static void updateName(final Context context ,final String firstName, final String lastName, final String deviceId){
+
+        User user = new User(null, firstName, lastName, deviceId, true, null);
+
+        apiService.updateName(user, new RestCallback<User>() {
+            @Override
+            public void failure(RestError restError) {
+                Toast.makeText(context, "Connection Error, Please try again ", Toast.LENGTH_LONG).show();
+            }
+
+            @Override
+            public void success(User user, Response response) {
+                Toast.makeText(context, "You have successfully updated your name " + user.getFirstName(), Toast.LENGTH_SHORT).show();
+            }
+        });
+
+
+    }
+
     public static void toggleVisibility(final Context context, final Switch aSwitch) {
 
         //  GET USER INFO

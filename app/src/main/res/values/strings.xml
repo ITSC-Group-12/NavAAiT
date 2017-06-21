@@ -22,6 +22,7 @@
     <string name="hint_first_name">First Name</string>
     <string name="hint_last_name">Last Name</string>
     <string name="btn_txt_register">Register</string>
+    <string name="btn_update_name">Update</string>
     <string name="navigation_view_image_txt">Navigation View Image</string>
     <string name="nav_view_text">Hello</string>
 </resources>
