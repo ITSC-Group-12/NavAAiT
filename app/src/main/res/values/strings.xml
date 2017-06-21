@@ -25,4 +25,5 @@
     <string name="btn_update_name">Update</string>
     <string name="navigation_view_image_txt">Navigation View Image</string>
     <string name="nav_view_text">Hello</string>
+    <string name="location_picture">Location Picture</string>
 </resources>

@@ -3,6 +3,7 @@ package com.team12.navaait;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.speech.RecognizerIntent;
 import android.support.annotation.NonNull;
@@ -24,7 +25,9 @@ import android.widget.Toast;
 import android.widget.ViewFlipper;
 
 import com.arlib.floatingsearchview.FloatingSearchView;
+import com.esri.arcgisruntime.geometry.GeometryEngine;
 import com.esri.arcgisruntime.geometry.Point;
+import com.esri.arcgisruntime.geometry.SpatialReferences;
 import com.esri.arcgisruntime.mapping.view.GraphicsOverlay;
 import com.esri.arcgisruntime.mapping.view.LocationDisplay;
 import com.esri.arcgisruntime.mapping.view.MapView;
@@ -193,7 +196,7 @@ public class MainActivity extends AppCompatActivity {
         mIALocationManager.registerRegionListener(mRegionListener);
 
         mSearchView.setOnQueryChangeListener(new SearchViewOnQueryChangeListener(mSearchView, getApplicationContext()));
-        mSearchView.setOnSearchListener(new SearchViewOnSearchListener(mLocationDisplay, mLastQuery, mMapView, slideUpLocationLabel, mSlideUpPanel, closeAction, getApplicationContext(), this,slideupDesLabel));
+        mSearchView.setOnSearchListener(new SearchViewOnSearchListener(mLocationDisplay, mLastQuery, mMapView, slideUpLocationLabel, mSlideUpPanel, closeAction, getApplicationContext(), this, slideupDesLabel));
         mSearchView.setOnFocusChangeListener(new SearchViewOnFocusChangeListener(mSearchView, mLastQuery));
         mSearchView.setOnMenuItemClickListener(new SearchViewOnMenuItemClickListener(mLocationDisplay, getApplicationContext(), activity));
         mSlidingLayer.setOnInteractListener(new SlidingLayerOnInteractListener(menuMultipleActions));
@@ -282,18 +285,42 @@ public class MainActivity extends AppCompatActivity {
                 overlays.removeAll(overlays);
                 closeAction.setVisibility(View.INVISIBLE);
 
-            } else if (fab.getId() == R.id.action_a) {
+            }
+        } else if (fab.getId() == R.id.action_a) {
+            TextView calloutContent = new TextView(mMapView.getContext());
+            calloutContent.setTextColor(Color.BLACK);
+            calloutContent.setSingleLine();
 
-                actionA.setTitle("Action A clicked");
-            } else if (fab.getId() == R.id.action_b) {
-                viewFlipper.showNext();
-            } else if (fab.getId() == R.id.action_c) {
+            Location location = new Location(9.0397, 38.7634, "Registral", "Registral is where students register at begining of every year");
+            Point mapPoint = new Point(location.getLongitude(), location.getLatitude(), SpatialReferences.getWgs84());
+            slideUpLocationLabel.setText(location.getName());
+            slideupDesLabel.setText(location.getDescription());
+            calloutContent.setText(location.getName());
 
-            } else if (fab.getId() == R.id.action_d) {
+            // convert to WGS84 for lat/lon format
+            Point wgs84Point = (Point) GeometryEngine.project(mapPoint, SpatialReferences.getWgs84());
 
+            //set content and show
+            mMapView.getCallout().setLocation(mapPoint);
+            mMapView.getCallout().setContent(calloutContent);
+            mMapView.getCallout().show();
+            // center on tapped point
+            mMapView.setViewpointCenterAsync(mapPoint);
+            setEndingPoint(mapPoint);
+            mSlideUpPanel.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
+            if (!closeAction.isShown()) {
+                closeAction.setVisibility(View.VISIBLE);
             }
 
+        } else if (fab.getId() == R.id.action_b) {
+            viewFlipper.showNext();
+        } else if (fab.getId() == R.id.action_c) {
+
+        } else if (fab.getId() == R.id.action_d) {
+
         }
+
+
     }
 
     @OnClick(R.id.show_directions)
@@ -433,12 +460,12 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == REQUEST_CODE && resultCode == RESULT_OK) {
             // Populate the wordsList with the String values the recognition engine thought it heard
             ArrayList<String> matches = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
-            if(!matches.isEmpty()){
+            if (!matches.isEmpty()) {
 
                 mSearchView.setSearchFocused(true);
                 mSearchView.setSearchText(matches.get(0));
                 Log.d("MATCHES", matches.toString());
-            }else{
+            } else {
                 Toast.makeText(getApplicationContext(), "No Result from Speech Recognizer", Toast.LENGTH_SHORT).show();
             }
         }
