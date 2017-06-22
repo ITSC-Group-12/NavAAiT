@@ -20,6 +20,7 @@ public class SharedPref {
     public static final String USER_DEVICE_ID = "USER_DEVICE_ID";
     public static final String USER_VISIBILITY = "USER_VISIBILITY";
     public static final String MAP_VERSION = "MAP_VERSION";
+    public static final String MAP_ASSET_LOADED = "MAP_ASSET";
 
     public static String getStringPref(@NonNull Context context, @NonNull String pref) {
         SharedPreferences sharedPreferences = context.getSharedPreferences(FILE, MODE_PRIVATE);

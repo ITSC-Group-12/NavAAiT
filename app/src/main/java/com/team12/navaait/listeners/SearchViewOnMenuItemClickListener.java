@@ -59,6 +59,7 @@ public class SearchViewOnMenuItemClickListener implements FloatingSearchView.OnM
             mLocationDisplay.setAutoPanMode(LocationDisplay.AutoPanMode.RECENTER);
             if (!mLocationDisplay.isStarted())
                 mLocationDisplay.startAsync();
+                Toast.makeText(context, "Locatin not Turned on.", Toast.LENGTH_LONG).show();
         } else {
             Toast.makeText(context, "NOT SURE WHICH SEARCH VIEW ACTION BUTTON IS PRESSED.", Toast.LENGTH_LONG).show();
         }

@@ -7,6 +7,7 @@ import android.graphics.drawable.Drawable;
 import android.os.Looper;
 import android.util.Log;
 import android.widget.Toast;
+import android.widget.ViewFlipper;
 
 import com.indooratlas.android.sdk.IALocation;
 import com.indooratlas.android.sdk.IALocationListener;
@@ -21,6 +22,7 @@ import com.indooratlas.android.sdk.resources.IATask;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.RequestCreator;
 import com.squareup.picasso.Target;
+import com.team12.navaait.R;
 
 import org.osmdroid.bonuspack.overlays.GroundOverlay;
 import org.osmdroid.util.GeoPoint;
@@ -32,7 +34,7 @@ import org.osmdroid.views.MapView;
 
 public class Indoor {
 
-    private static final int MAX_DIMENSION = 0;
+    private static final int MAX_DIMENSION = 2048;
     private static final String TAG = "Indoor";
     private GroundOverlay mGroundOverlay = null;
     private MapView mMapView2;
@@ -43,6 +45,7 @@ public class Indoor {
     private IATask<IAFloorPlan> mFetchFloorPlanTask;
     private GroundOverlay mBlueDot = null;
     private boolean mCameraPositionNeedsUpdating = true; // update on first location
+    private ViewFlipper viewFlipper;
     /**
      * Listener that handles location change events.
      */
@@ -52,10 +55,11 @@ public class Indoor {
      */
     private IARegion.Listener mRegionListener;
 
-    public Indoor(MapView mMV, Context c, IAResourceManager mRM) {
+    public Indoor(MapView mMV, Context c, IAResourceManager mRM, final ViewFlipper viewFlipper) {
         this.mMapView2 = mMV;
         this.context = c;
         this.mResourceManager = mRM;
+        this.viewFlipper = viewFlipper;
 
         mListener = new IALocationListenerSupport() {
 
@@ -78,12 +82,12 @@ public class Indoor {
                 if (mBlueDot == null) {
 
                     mBlueDot = new GroundOverlay();
-//                mBlueDot.setImage(getResources().getDrawable(R.drawable.circle));
+                mBlueDot.setImage(context.getResources().getDrawable(R.drawable.circle));
                     mBlueDot.setTransparency(0.5f);
 
                 } else {
                     // move existing markers position to received location
-                    //mBlueDot.setPosition(geoPoint);
+                    mBlueDot.setPosition(geoPoint);
                     mMapView2.getOverlays().remove(mBlueDot);
                 }
                 mBlueDot.setPosition(geoPoint);
@@ -97,6 +101,7 @@ public class Indoor {
                 if (mCameraPositionNeedsUpdating) {
                     //mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 17.5f));
                     mMapView2.getController().setCenter(geoPoint);
+                    mMapView2.getController().setCenter(new GeoPoint(9.0404, 38.7633));
                     mCameraPositionNeedsUpdating = false;
                 }
 
@@ -108,6 +113,7 @@ public class Indoor {
 
             @Override
             public void onEnterRegion(IARegion region) {
+                viewFlipper.showNext();
                 if (region.getType() == IARegion.TYPE_FLOOR_PLAN) {
                     final String newId = region.getId();
                     // Are we entering a new floor plan or coming back the floor plan we just left?
@@ -128,6 +134,7 @@ public class Indoor {
 
             @Override
             public void onExitRegion(IARegion region) {
+                viewFlipper.showNext();
                 if (mGroundOverlay != null) {
                     // Indicate we left this floor plan but leave it there for reference
                     // If we enter another floor plan, this one will be removed and another one loaded

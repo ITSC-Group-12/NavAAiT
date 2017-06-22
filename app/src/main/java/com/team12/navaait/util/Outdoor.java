@@ -10,6 +10,7 @@ import com.esri.arcgisruntime.concurrent.ListenableFuture;
 import com.esri.arcgisruntime.geometry.Point;
 import com.esri.arcgisruntime.loadable.LoadStatus;
 import com.esri.arcgisruntime.mapping.ArcGISMap;
+import com.esri.arcgisruntime.mapping.Basemap;
 import com.esri.arcgisruntime.mapping.MobileMapPackage;
 import com.esri.arcgisruntime.mapping.view.Graphic;
 import com.esri.arcgisruntime.mapping.view.GraphicsOverlay;
@@ -92,6 +93,7 @@ public class Outdoor {
                             setupOfflineNetwork(mapPackage.getMaps().get(0));
                             mapPackage.getMaps().get(0).removeDoneLoadingListener(this);
                             mMapView.getGraphicsOverlays().add(graphicsOverlay);
+                            mMapView.getMap().setBasemap(Basemap.createStreetsVector());
                         }
                     });
 
@@ -140,6 +142,8 @@ public class Outdoor {
             return;
         }
 
+        graphicsOverlay = new GraphicsOverlay();
+        mMapView.getGraphicsOverlays().add(graphicsOverlay);
         // clear all drawn paths
         graphicsOverlay.clearSelection();
 

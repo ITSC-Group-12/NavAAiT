@@ -162,7 +162,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
 
-
         Bundle extras = new Bundle(2);
         extras.putString(IALocationManager.EXTRA_API_KEY, getString(R.string.indooratlas_api_key));
         extras.putString(IALocationManager.EXTRA_API_SECRET, getString(R.string.indooratlas_api_secret));
@@ -185,9 +184,8 @@ public class MainActivity extends AppCompatActivity {
             locationSnackbar.show();
         }
 
-
         outdoor = new Outdoor(mMapView, getApplicationContext());
-        indoor = new Indoor(mMapView2, getApplicationContext(), mResourceManager);
+        indoor = new Indoor(mMapView2, getApplicationContext(), mResourceManager, viewFlipper);
         mListener = indoor.getmListener();
         mRegionListener = indoor.getmRegionListener();
 
@@ -282,16 +280,37 @@ public class MainActivity extends AppCompatActivity {
                 menuMultipleActions.setVisibility(View.VISIBLE);
                 endingPoint = null;
                 ListenableList<GraphicsOverlay> overlays = mMapView.getGraphicsOverlays();
-                overlays.removeAll(overlays);
+                overlays.clear();
                 closeAction.setVisibility(View.INVISIBLE);
 
             }
         } else if (fab.getId() == R.id.action_a) {
+            Location location = new Location(9.0397, 38.7634, "Registrar", "Registrar is where students register at begining of every year");
+            importantLocations(location);
+
+        } else if (fab.getId() == R.id.action_b) {
+            Location location = new Location(9.0397, 38.7634, "Registrar", "Registrar is where students register at begining of every year");
+            importantLocations(location);
+
+        } else if (fab.getId() == R.id.action_c) {
+            Location location = new Location(9.0397, 38.7634, "Registrar", "Registrar is where students register at begining of every year");
+            importantLocations(location);
+
+        } else if (fab.getId() == R.id.action_d) {
+            Location location = new Location(9.0397, 38.7634, "Registrar", "Registrar is where students register at begining of every year");
+            importantLocations(location);
+
+        }
+
+
+    }
+
+    private void importantLocations(Location location) {
+        if (location != null) {
             TextView calloutContent = new TextView(mMapView.getContext());
             calloutContent.setTextColor(Color.BLACK);
             calloutContent.setSingleLine();
 
-            Location location = new Location(9.0397, 38.7634, "Registral", "Registral is where students register at begining of every year");
             Point mapPoint = new Point(location.getLongitude(), location.getLatitude(), SpatialReferences.getWgs84());
             slideUpLocationLabel.setText(location.getName());
             slideupDesLabel.setText(location.getDescription());
@@ -307,19 +326,13 @@ public class MainActivity extends AppCompatActivity {
             // center on tapped point
             mMapView.setViewpointCenterAsync(mapPoint);
             setEndingPoint(mapPoint);
-            mSlideUpPanel.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
+            mSlideUpPanel.setPanelState(PanelState.COLLAPSED);
             if (!closeAction.isShown()) {
                 closeAction.setVisibility(View.VISIBLE);
             }
-
-        } else if (fab.getId() == R.id.action_b) {
-            viewFlipper.showNext();
-        } else if (fab.getId() == R.id.action_c) {
-
-        } else if (fab.getId() == R.id.action_d) {
-
+        } else {
+            Toast.makeText(MainActivity.this, "Location not Set.", Toast.LENGTH_SHORT).show();
         }
-
 
     }
 
