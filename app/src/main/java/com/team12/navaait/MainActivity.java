@@ -129,7 +129,7 @@ public class MainActivity extends AppCompatActivity {
     //Map Stuff
     private LocationDisplay mLocationDisplay;
 
-    private Snackbar locationSnackbar;
+//    private Snackbar locationSnackbar;
     private Point startingPoint = null;
     private Point endingPoint = null;
 
@@ -181,7 +181,7 @@ public class MainActivity extends AppCompatActivity {
             mLocationDisplay.startAsync();
             startingPoint = mLocationDisplay.getLocation().getPosition();
         } else {
-            locationSnackbar.show();
+//            locationSnackbar.show();
         }
 
         outdoor = new Outdoor(mMapView, getApplicationContext());
@@ -218,13 +218,13 @@ public class MainActivity extends AppCompatActivity {
 
                 // If LocationDisplay started OK, then continue.
                 if (dataSourceStatusChangedEvent.isStarted()) {
-                    locationSnackbar.dismiss();
+//                    locationSnackbar.dismiss();
                     return;
                 }
 
                 // No error is reported, then continue.
                 if (dataSourceStatusChangedEvent.getError() == null) {
-                    locationSnackbar.dismiss();
+//                    locationSnackbar.dismiss();
                     return;
                 }
 
@@ -243,8 +243,8 @@ public class MainActivity extends AppCompatActivity {
                     // be enabled on the device.
                     String message = String.format("Error in DataSourceStatusChangedListener: %s", dataSourceStatusChangedEvent
                             .getSource().getLocationDataSource().getError().getMessage());
-                    Toast.makeText(MainActivity.this, message, Toast.LENGTH_LONG).show();
-                    locationSnackbar.show();
+                    Toast.makeText(MainActivity.this, "Location not Enabled.", Toast.LENGTH_LONG).show();
+//                    locationSnackbar.show();
 
                 }
             }
@@ -254,7 +254,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onLocationChanged(LocationDisplay.LocationChangedEvent locationChangedEvent) {
                 if (mLocationDisplay.getLocation().getPosition() != null) {
-                    locationSnackbar.dismiss();
+//                    locationSnackbar.dismiss();
                     Point currentLocation = mLocationDisplay.getLocation().getPosition();
                     startingPoint = currentLocation;
                     UserService.setLocation(getApplicationContext(), new Location("", currentLocation.getX(), currentLocation.getY()));
@@ -346,7 +346,7 @@ public class MainActivity extends AppCompatActivity {
                     Toast.makeText(MainActivity.this, "Ending Point Not Set", Toast.LENGTH_SHORT).show();
                 }
             } else {
-                Toast.makeText(MainActivity.this, "Starting Point Not Set", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, "Location not Determined.", Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -362,7 +362,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void setupUI() {
 
-        locationSnackbar = Snackbar.make(mMapView, "Please turn location on for routing!", Snackbar.LENGTH_INDEFINITE);
+//        locationSnackbar = Snackbar.make(mMapView, "Please turn location on for routing!", Snackbar.LENGTH_INDEFINITE);
         visibilitySwitch.setChecked(SharedPref.getBooleanPref(getApplicationContext(), SharedPref.USER_VISIBILITY));
         mMapView2.setTilesScaledToDpi(true);
         mMapView2.setBuiltInZoomControls(true);
@@ -406,7 +406,9 @@ public class MainActivity extends AppCompatActivity {
                     outdoor.loadMobileMapPackage();
                 } else {
                     // report to user that permission was denied
-                    Toast.makeText(MainActivity.this, getResources().getString(R.string.location_permission_denied),
+                    Toast.makeText(MainActivity.this,
+//                            getResources().getString(R.string.location_permission_denied),
+                            "Permission Was Denied",
                             Toast.LENGTH_SHORT).show();
                 }
             }
@@ -423,8 +425,10 @@ public class MainActivity extends AppCompatActivity {
                     // If permission was denied, show toast to inform user what was chosen. If LocationDisplay is started again,
                     // request permission UX will be shown again, option should be shown to allow never showing the UX again.
                     // Alternative would be to disable functionality so request is not shown again.
-                    Toast.makeText(MainActivity.this, getResources().getString(R.string.location_permission_denied), Toast
-                            .LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this,
+//                            getResources().getString(R.string.location_permission_denied),
+                            "Permission was Denied.",
+                            Toast.LENGTH_SHORT).show();
                 }
             }
 

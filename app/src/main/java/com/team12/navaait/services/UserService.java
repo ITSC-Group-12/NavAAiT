@@ -44,13 +44,13 @@ public class UserService {
             @Override
             public void failure(RestError restError) {
 
-                Toast.makeText(context, restError.getStrMessage() + " " + restError.getCode(), Toast.LENGTH_SHORT).show();
+//                Toast.makeText(context, restError.getStrMessage() + " " + restError.getCode(), Toast.LENGTH_SHORT).show();
             }
 
             @Override
             public void success(User user, Response response) {
                 Log.i(USER_TAG, "YAY! I KNOW WHERE I AM.");
-                Toast.makeText(context, "YAY! I KNOW WHERE I AM.", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(context, "YAY! I KNOW WHERE I AM.", Toast.LENGTH_SHORT).show();
             }
         });
 

@@ -74,7 +74,7 @@ public class MapService {
                     public void onCompleted(Exception e, File file) {
                         if (e != null) {
 
-                            Toast.makeText(context, e.getMessage(), Toast.LENGTH_SHORT).show();
+//                            Toast.makeText(context, e.getMessage(), Toast.LENGTH_SHORT).show();
                             Log.e("DOWNLOAD", e.getMessage());
                         }
                         progressBar.setProgress(0);
