@@ -183,8 +183,8 @@ public class Outdoor {
                                 graphicsOverlay.setSelectionColor(0x56467839);
 
 
-                                // Display route distance and time.
-                                Snackbar.make(mMapView, topRoute.getRouteName(), Snackbar.LENGTH_SHORT).show();
+//                                // Display route distance and time.
+//                                Snackbar.make(mMapView, topRoute.getRouteName(), Snackbar.LENGTH_SHORT).show();
 
                                 mMapView.setViewpointGeometryAsync(topRoute.getRouteGeometry());
 
@@ -192,8 +192,8 @@ public class Outdoor {
 
                         }
                     } catch (InterruptedException | ExecutionException e) {
-                        Snackbar.make(mMapView, String.format(context.getString(R.string.route_error), e.getMessage()),
-                                Snackbar.LENGTH_SHORT).show();
+//                        Snackbar.make(mMapView, String.format(context.getString(R.string.route_error), e.getMessage()),
+//                                Snackbar.LENGTH_SHORT).show();
                         Log.e("SOLVE", e.getMessage());
                     }
                 }
