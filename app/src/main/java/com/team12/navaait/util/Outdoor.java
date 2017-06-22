@@ -199,8 +199,8 @@ public class Outdoor {
                 }
             });
         } catch (InterruptedException | ExecutionException e) {
-            Snackbar.make(mMapView, String.format(context.getString(R.string.route_params_error), e.getMessage()),
-                    Snackbar.LENGTH_SHORT).show();
+//            Snackbar.make(mMapView, String.format(context.getString(R.string.route_params_error), e.getMessage()),
+//                    Snackbar.LENGTH_SHORT).show();
         }
     }
 }
