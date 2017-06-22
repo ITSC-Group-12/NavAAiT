@@ -289,15 +289,15 @@ public class MainActivity extends AppCompatActivity {
             importantLocations(location);
 
         } else if (fab.getId() == R.id.action_b) {
-            Location location = new Location(9.0397, 38.7634, "Registrar", "Registrar is where students register at begining of every year");
+            Location location = new Location(9.0402, 38.7631, "Cost Sharing Office", "Cost Sharing Office is an office that handles issue considering students cost. ");
             importantLocations(location);
 
         } else if (fab.getId() == R.id.action_c) {
-            Location location = new Location(9.0397, 38.7634, "Registrar", "Registrar is where students register at begining of every year");
+            Location location = new Location(9.0410, 38.7635, "Auditorium", "The Auditorium is usually where orientations for fresh students are given, Trainings from different companies are usually held at the auditorium.");
             importantLocations(location);
 
         } else if (fab.getId() == R.id.action_d) {
-            Location location = new Location(9.0397, 38.7634, "Registrar", "Registrar is where students register at begining of every year");
+            Location location = new Location(9.0400, 38.7629, "Lounge", "This is the place where students and staff members get fast food. Students usually chill here by using WIFI and getting something to eat or drink.");
             importantLocations(location);
 
         }
