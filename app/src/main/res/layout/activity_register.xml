@@ -2,7 +2,8 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
 android:layout_width="fill_parent"
 android:layout_height="fill_parent"
-android:fitsSystemWindows="true">
+android:fitsSystemWindows="true"
+    android:background="@color/colorPrimary">
 
 <LinearLayout
     android:orientation="vertical"
@@ -12,12 +13,14 @@ android:fitsSystemWindows="true">
     android:paddingLeft="24dp"
     android:paddingRight="24dp">
 
-    <ImageView android:src="@drawable/icon"
+    <ImageView
+        android:id="@+id/imageView2"
         android:layout_width="wrap_content"
         android:layout_height="72dp"
-        android:layout_marginBottom="24dp"
         android:layout_gravity="center_horizontal"
-        android:contentDescription="@string/navaait_app_logo"/>
+        android:layout_marginBottom="24dp"
+        android:contentDescription="@string/navaait_app_logo"
+        android:src="@drawable/front_icon" />
 
     <!--  Name Label -->
     <android.support.design.widget.TextInputLayout
@@ -29,6 +32,7 @@ android:fitsSystemWindows="true">
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:inputType="text"
+            android:textColor="@color/primary_light"
             android:hint="@string/hint_first_name" />
     </android.support.design.widget.TextInputLayout>
     <android.support.design.widget.TextInputLayout
@@ -40,6 +44,7 @@ android:fitsSystemWindows="true">
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:inputType="text"
+            android:textColor="@color/primary_light"
             android:hint="@string/hint_last_name" />
     </android.support.design.widget.TextInputLayout>
 
@@ -51,6 +56,8 @@ android:fitsSystemWindows="true">
         android:layout_marginTop="24dp"
         android:layout_marginBottom="24dp"
         android:padding="12dp"
+        android:textColor="@color/primary_light"
+        android:background="@drawable/butshape"
         android:text="@string/btn_txt_register"/>
 
 

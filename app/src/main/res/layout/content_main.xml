@@ -127,17 +127,20 @@
                     android:layout_width="match_parent"
                     android:layout_height="150dp"
                     android:id="@+id/pic"
-                    android:background="@drawable/login_bg"
+                    android:background="@drawable/five"
                     android:contentDescription="@string/location_picture"/>
 
             </android.support.v7.widget.CardView>
             <android.support.v7.widget.CardView
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
+                    android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                style="@style/MyCardViewStyle">
                 <TextView
                     android:id="@+id/slideup_description"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"/>
+                    android:layout_height="wrap_content"
+                    android:textSize="15sp"
+                    android:fontFamily="sans-serif"/>
             </android.support.v7.widget.CardView>
 
         </LinearLayout>
